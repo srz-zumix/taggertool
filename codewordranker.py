@@ -11,6 +11,7 @@ from argparse import ArgumentParser
 
 tagdir = os.getenv('TREETAGGER_ROOT')
 tagger = treetaggerwrapper.TreeTagger(TAGLANG='en',TAGDIR=tagdir)
+options = None
 
 def parse_command_line():
     parser = ArgumentParser()
@@ -21,6 +22,11 @@ def parse_command_line():
         version=u'%(prog)s version 0.1'
     )
     parser.add_argument(
+        '--html',
+        action='store_true',
+        help='output html'
+    )
+    parser.add_argument(
         'file',
         metavar='FILE/DIR',
         nargs='+',
@@ -29,14 +35,22 @@ def parse_command_line():
     options = parser.parse_args()
     return options, parser
 
+
 r_alnum = re.compile(r'^[a-zA-Z0-9]+$')
 def isalnum(s):
     return r_alnum.match(s) is not None
 
+
+r_alpha = re.compile(r'^[a-zA-Z]+$')
+def isalpha(s):
+    return r_alpha.match(s) is not None
+
+
 def checkword(word):
-    if not isalnum(word):
+    if not isalpha(word):
         return False
     return True
+
 
 def checktagger(text, line, words):
     tags_plain = tagger.TagText(text)
@@ -60,18 +74,58 @@ def printwords(words):
         print("{0}: {1}".format(k, len(v)))
 
 
+def printhtml(words):
+    maxnum = len(max(words.values(), key=lambda x: len(x)))
+    minnum = len(min(words.values(), key=lambda x: len(x)))
+    diff = maxnum - minnum
+    maxfontsize = 72
+    minfontsize = 12
+    difffontsize = maxfontsize - minfontsize
+    def calcfontsize(num):
+        return (num - minnum) * difffontsize / diff + minfontsize
+    print('<html><body>')
+    for k,v in sorted(words.items(), key=lambda x: x[0]):
+        print('<span style="font-size: {0}">{1}</span>'.format(calcfontsize(len(v)), k))
+    print('</body></html>')
+
+r_block_comment_begin = re.compile('(.*)/\*.*')
+r_block_comment_end = re.compile('.*\*/(.*)')
+line_comment = '//'
+
+def checkcomment(text, block_comment):
+    if block_comment:
+        m = r_block_comment_end.match(text)
+        if m:
+            block_comment = False
+            text = m.group(1)
+    if not block_comment:
+        m = r_block_comment_begin.match(text)
+        if m:
+            block_comment = True
+            text = m.group(1)
+        line_comment_start = text.find(line_comment)
+        if line_comment_start != -1:
+            text = text[:line_comment_start]
+
+
 def check(filepath):
     filename = os.path.basename(filepath)
     f = codecs.open(filepath, 'r', encoding='utf-8-sig')
-    line_count = 0
+    line_count = 1
+    block_comment = False
     words = {}
     for line in f:
         #print(str(count) + ':' + line)
         text = line.strip()
-        if len(text) > 0 and not text.startswith('//'):
-            checktagger(text, line_count, words)
+        checkcomment(text, block_comment)
+        if not block_comment:
+            if len(text) > 0 and not text.startswith('//'):
+                checktagger(text, line_count, words)
         line_count += 1
-    printwords(words)
+    if options.html:
+        printhtml(words)
+    else:
+        printwords(words)
 
 
 def checkfile(f):
@@ -87,6 +141,7 @@ def checkdir(dir):
             checkfile(d)
 
 def main():
+    global options
     options, parser = parse_command_line()
     for f in options.file:
         if os.path.isdir(f):
