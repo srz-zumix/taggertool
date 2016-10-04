@@ -13,7 +13,7 @@
     <Name>codewordranker</Name>
     <RootNamespace>codewordranker</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>sample\iutest_ver.hpp</CommandLineArguments>
+    <CommandLineArguments>sample\iutest_ver.hpp --exclude_keywords</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <Environment>PATH=%ProgramFiles(x86)%\Mecab\bin;%PATH%</Environment>
   </PropertyGroup>
@@ -27,6 +27,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="codewordranker.py" />
+    <Compile Include="keywords.py" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
