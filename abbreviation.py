@@ -29,6 +29,17 @@ def parse_command_line():
         version=u'%(prog)s version 0.1'
     )
     parser.add_argument(
+        '-g',
+        '--gene',
+        action='append',
+        help='exlude word'
+    )
+    parser.add_argument(
+        '-w',
+        '--whitelist',
+        help='whitelist file'
+    )
+    parser.add_argument(
         'file',
         metavar='FILE/DIR',
         nargs='+',
@@ -170,8 +181,33 @@ def checkdir(dir):
             checkfile(d)
 
 
+r_geneword = re.compile(r'^[a-zA-Z][a-z]+$')
+def isgeneword(s):
+    return r_geneword.match(s) is not None
+
+
+def make_gene(file):
+    f = open(file, 'r')
+    for line in f:
+        word = line.strip()
+        if isgeneword(word):
+            gene.append(word.lower())
+
+
+def setup(options):
+    global gene
+    global whitelist
+    if options.gene:
+        for g in options.gene:
+            gene.extend(make_gene(g))
+    if options.whitelist:
+        for word in options.whitelist:
+            if isalpha(word):
+                whitelist.append(word.lower())
+
 def main():
     options, parser = parse_command_line()
+    setup(options)
     for f in options.file:
         if os.path.isdir(f):
             checkdir(f)
