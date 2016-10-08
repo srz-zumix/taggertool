@@ -9,8 +9,9 @@ import treetaggerwrapper
 
 import keywords
 
+from glosbe import Glosbe
 from argparse import ArgumentParser
-
+    
 tagdir = os.getenv('TREETAGGER_ROOT')
 tagger = treetaggerwrapper.TreeTagger(TAGLANG='en',TAGDIR=tagdir)
 options = None
@@ -37,7 +38,13 @@ def parse_command_line():
     parser.add_argument(
         '-w',
         '--whitelist',
+        action='append',
         help='whitelist file'
+    )
+    parser.add_argument(
+        '--glosbe',
+        action='store_true',
+        help='use online translation service (glosbe)'
     )
     parser.add_argument(
         'file',
@@ -81,6 +88,27 @@ def checkcomment(text, block_comment):
     return text, block_comment
 
 
+def is_suspicion_glosbe(word):
+    try:
+        r = Glosbe.translate(word, Glosbe.EN, Glosbe.JA)
+        if r['result'] == 'ok':
+            tuc = r['tuc']
+            if len(tuc) == 0:
+                return True
+            for t in tuc:
+                # 1 の辞書だけ使う
+                if 1 in t['authors']:
+                    for meaning in t['meanings']:
+                        if meaning['language'] == Glosbe.EN:
+                            # XXX の略語って意味はダメ
+                            if 'abbreviation' in meaning['text']:
+                                return True
+                    return False
+    except:
+        pass
+    return True
+
+
 def is_whitelist(word):
     if word in whitelist:
         return True
@@ -90,6 +118,61 @@ def is_whitelist(word):
     if word in gene:
         return True
     return False
+
+
+def is_suspicion_past(word, length):
+    if length > 2 and word.endswith('ed'):
+        if is_whitelist(word[:-2]):
+            return False
+        if is_whitelist(word[:-1]):
+            return False
+        if length > 3 and word.endswith('ied'):
+            if is_whitelist(word[:-3] + 'y'):
+                return False
+        if re.match('.*[a-z]{2,2}ed$', word):
+            if is_whitelist(word[:-3]):
+                return False
+        if length > 4 and word.endswith('cked'):
+            if is_whitelist(word[:-3]):
+                return False
+    return True
+
+
+def is_suspicion_past_participle(word, length):
+    if length > 2 and word.endswith('en'):
+        if is_whitelist(word[:-1]):
+            return False
+        if is_whitelist(word[:-1]):
+            return False
+        if re.match('.*[a-z]{2,2}en$', word):
+            if is_whitelist(word[:-3 + 'e']):
+                return False
+    return True
+
+
+def is_suspicion_progressive(word, length):
+    if length > 3 and word.endswith('ing'):
+        if is_whitelist(word[:-3]):
+            return False
+        if is_whitelist(word[:-3] + 'e'):
+            return False
+        if re.match('.*[a-z]{2,2}ing$', word):
+            if is_whitelist(word[:-4]):
+                return False
+    return True
+
+
+def is_suspicion_plural(word, length):
+    if word.endswith('s'):
+        if is_whitelist(word[:-1]):
+            return False
+        if length > 2 and word.endswith('es'):
+            if is_whitelist(word[:-2]):
+                return False
+        if length > 3 and word.endswith('ies'):
+            if is_whitelist(word[:-3] + 'y'):
+                return False
+    return True
 
 
 def is_suspicion(word):
@@ -102,23 +185,20 @@ def is_suspicion(word):
     if is_whitelist(word):
         return False
     # 過去形
-    if length > 2 and word.endswith('ed'):
-        if is_whitelist(word[:-2]):
-            return False
-        if is_whitelist(word[:-1]):
-            return False
+    if not is_suspicion_past(word, length):
+        return False
+    # 過去分詞
+    if not is_suspicion_past_participle(word, length):
+        return False
     # 進行形
-    if length > 3 and word.endswith('ing'):
-        if is_whitelist(word[:-3]):
-            return False
-        if is_whitelist(word[:-3] + 'e'):
-            return False
+    if not is_suspicion_progressive(word, length):
+        return False
     # 複数形
-    if word.endswith('s'):
-        if is_whitelist(word[:-1]):
-            return False
-    if length > 3 and word.endswith('ies'):
-        if is_whitelist(word[:-3] + 'y'):
+    if not is_suspicion_plural(word, length):
+        return False
+    # Web API
+    if options.glosbe:
+        if not is_suspicion_glosbe(word):
             return False
     return True
 
@@ -136,11 +216,10 @@ def checktagger(text, line, words):
         if isinstance(tag, treetaggerwrapper.NotTag):
             continue
         word = tag.word.lower()
-        if is_suspicion(word):
-            if words.has_key(word):
-                words[word].append(line)
-            else:
-                words[word] = [line]
+        if words.has_key(word):
+            words[word].append(line)
+        elif is_suspicion(word):
+            words[word] = [line]
 
 
 def check(filepath):
@@ -162,7 +241,7 @@ def check(filepath):
 def printresult(filepath, d):
     for k,v in sorted(d.items(), key=lambda x: len(x[1])):
         for line in v:
-            print("{0}({1}): warning: \"{2}\": abbreviation ??".format(filepath, line, k))
+            print("{0}({1}): warning: \"{2}\": is ok ??".format(filepath, line, k))
 
 
 def checkfile(f):
@@ -187,27 +266,40 @@ def isgeneword(s):
 
 
 def make_gene(file):
+    gene = []
     f = open(file, 'r')
     for line in f:
         word = line.strip()
         if isgeneword(word):
             gene.append(word.lower())
+    return gene
 
 
-def setup(options):
+def make_whitelist(file):
+    whitelist = []
+    f = open(file, 'r')
+    for line in f:
+        word = line.strip()
+        if isalpha(word):
+            whitelist.append(word.lower())
+    return whitelist
+
+
+def setup():
     global gene
     global whitelist
     if options.gene:
         for g in options.gene:
             gene.extend(make_gene(g))
     if options.whitelist:
-        for word in options.whitelist:
-            if isalpha(word):
-                whitelist.append(word.lower())
+        for w in options.whitelist:
+            whitelist.extend(make_whitelist(w))
+
 
 def main():
+    global options
     options, parser = parse_command_line()
-    setup(options)
+    setup()
     for f in options.file:
         if os.path.isdir(f):
             checkdir(f)
