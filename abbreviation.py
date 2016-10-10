@@ -20,6 +20,8 @@ whitelist = []
 gene = []
 langkeywords = []
 
+words = {}
+checked_words = []
 
 def parse_command_line():
     parser = ArgumentParser()
@@ -40,6 +42,11 @@ def parse_command_line():
         '--whitelist',
         action='append',
         help='whitelist file'
+    )
+    parser.add_argument(
+        '--exclude',
+        action='append',
+        help='exlude word'
     )
     parser.add_argument(
         '--glosbe',
@@ -90,7 +97,7 @@ def checkcomment(text, block_comment):
 
 def is_suspicion_glosbe(word):
     try:
-        r = Glosbe.translate(word, Glosbe.EN, Glosbe.JA)
+        r = Glosbe.Translate(word, Glosbe.EN, Glosbe.JA)
         if r['result'] == 'ok':
             tuc = r['tuc']
             if len(tuc) == 0:
@@ -145,7 +152,7 @@ def is_suspicion_past_participle(word, length):
         if is_whitelist(word[:-1]):
             return False
         if re.match('.*[a-z]{2,2}en$', word):
-            if is_whitelist(word[:-3 + 'e']):
+            if is_whitelist(word[:-3] + 'e'):
                 return False
     return True
 
@@ -209,17 +216,22 @@ def text_transform(text):
     return re.sub(r_sign, ' ', text)
 
 
-def checktagger(text, line, words):
+def checktagger(text, line):
+    global words
+    global checked_words
     tags_plain = tagger.TagText(text)
     tags = treetaggerwrapper.make_tags(tags_plain)
     for tag in tags:
         if isinstance(tag, treetaggerwrapper.NotTag):
             continue
         word = tag.word.lower()
-        if words.has_key(word):
-            words[word].append(line)
-        elif is_suspicion(word):
-            words[word] = [line]
+        if not word in checked_words:
+            if words.has_key(word):
+                words[word].append(line)
+            elif is_suspicion(word):
+                words[word] = [line]
+            else:
+                checked_words.append(word)
 
 
 def check(filepath):
@@ -227,19 +239,17 @@ def check(filepath):
     f = codecs.open(filepath, 'r', encoding='utf-8-sig')
     line_count = 1
     block_comment = False
-    words = {}
     for line in f:
         text = line.strip()
         text, block_comment = checkcomment(text, block_comment)
         if not block_comment:
             if len(text) > 0:
-                checktagger(text_transform(text), line_count, words)
+                checktagger(text_transform(text), line_count)
         line_count += 1
-    return words
 
 
-def printresult(filepath, d):
-    for k,v in sorted(d.items(), key=lambda x: len(x[1])):
+def printresult(filepath):
+    for k,v in sorted(words.items(), key=lambda x: len(x[1])):
         for line in v:
             print("{0}({1}): warning: \"{2}\": is ok ??".format(filepath, line, k))
 
@@ -247,8 +257,8 @@ def printresult(filepath, d):
 def checkfile(f):
     global langkeywords
     langkeywords = keywords.getkeywords(f)
-    words = check(f)
-    printresult(f, words)
+    check(f)
+    printresult(f)
 
 
 def checkdir(dir):
@@ -294,6 +304,9 @@ def setup():
     if options.whitelist:
         for w in options.whitelist:
             whitelist.extend(make_whitelist(w))
+    if options.exclude:
+        for e in options.exclude:
+            whitelist.extend(e.split(','))
 
 
 def main():

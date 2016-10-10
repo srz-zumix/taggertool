@@ -110,7 +110,7 @@ def printhtml(words):
     minfontsize = 12
     difffontsize = maxfontsize - minfontsize
     def calcfontsize(num):
-        return (num - minnum) * difffontsize / diff + minfontsize
+        return int((num - minnum) * difffontsize / diff + minfontsize)
     print('<html><body>')
     for k,v in sorted(words.items(), key=lambda x: x[0]):
         print('<span style="font-size: {0}px">{1}</span>'.format(calcfontsize(len(v)), k))
