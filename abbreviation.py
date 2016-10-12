@@ -18,6 +18,7 @@ options = None
 
 whitelist = []
 gene = []
+abbreviations = []
 langkeywords = []
 
 class Cache:
@@ -32,20 +33,39 @@ class Cache:
     def setup(self, dir):
         if not os.path.exists(dir):
             os.makedirs(dir)
-        self.gene_file = open(dir + '/' + self.name + '.txt', 'r+')
-        self.abbreviations_file = open(dir + '/' + self.name + '_abbreviations.txt', 'r+')
+        self._load(dir, 'a+')
+
+    def load(self, dir):
+        self._load(dir)
+
+    def _load(self, dir, mode):
+        self._open(dir, mode)
         for w in self.gene_file:
-            self.gene.append(w)
+            self.gene.append(w.rstrip())
         for w in self.abbreviations_file:
-            self.abbreviations.append(w)
+            self.abbreviations.append(w.rstrip())
+
+    def _open(self, dir, mode):
+        self.gene_file = open(Cache.get_gene_filename(dir, self.name), mode)
+        self.abbreviations_file = open(Cache.get_abbreviation_filename(dir, self.name), mode)
+
+    @staticmethod
+    def get_gene_filename(dir, name):
+        return dir + '/' + name + '.txt'
+
+    @staticmethod
+    def get_abbreviation_filename(dir, name):
+        return dir + '/' + name + '_abbreviations.txt'
 
     def add(self, word):
         if self.gene_file:
-            self.gene_file.writelines(word)
+            self.gene_file.write(word + '\n')
+            self.gene_file.flush()
 
     def add_abbreviation(self, word):
         if self.abbreviations_file:
-            self.abbreviations_file.writelines(word)
+            self.abbreviations_file.write(word + '\n')
+            self.abbreviations_file.flush()
 
 
 glosbe_cache = Cache('glosbe')
@@ -80,13 +100,35 @@ def parse_command_line():
         help='exlude word'
     )
     parser.add_argument(
+        '-a',
+        '--abbreviation',
+        action='append',
+        help='abbreviation word'
+    )
+    parser.add_argument(
         '--glosbe',
         action='store_true',
         help='use online translation service (glosbe)'
     )
     parser.add_argument(
         '--cache',
-        help='online translation cache directory'
+        action='store_true',
+        help='online translation cache enable'
+    )
+    parser.add_argument(
+        '--load-cache',
+        action='append',
+        help='load translation cache'
+    )
+    parser.add_argument(
+        '--cache-dir',
+        default='cache',
+        help='translation cache directory'
+    )
+    parser.add_argument(
+        '--list-words',
+        action='store_true',
+        help='list up words only'
     )
     parser.add_argument(
         'file',
@@ -299,9 +341,13 @@ def check(filepath):
 
 
 def printresult(filepath):
-    for k,v in sorted(words.items(), key=lambda x: len(x[1])):
-        for line in v:
-            print("{0}({1}): warning: \"{2}\": is ok ??".format(filepath, line, k))
+    if options.list_words:
+        for k,v in sorted(words.items(), key=lambda x: len(x[1])):
+            print("{0}(N): warning: \"{1}\": is ok ??".format(filepath, k))
+    else:
+        for k,v in sorted(words.items(), key=lambda x: len(x[1])):
+            for line in v:
+                print("{0}({1}): warning: \"{2}\": is ok ??".format(filepath, line, k))
 
 
 def checkfile(f):
@@ -335,30 +381,39 @@ def make_gene(file):
     return gene
 
 
-def make_whitelist(file):
-    whitelist = []
+def make_wordlist(file):
+    wordlist = []
     f = open(file, 'r')
     for line in f:
         word = line.strip()
         if isalpha(word):
-            whitelist.append(word.lower())
-    return whitelist
+            wordlist.append(word.lower())
+    return wordlist
 
 
 def setup():
     global gene
     global whitelist
+    global abbreviations
     if options.gene:
         for g in options.gene:
             gene.extend(make_gene(g))
     if options.whitelist:
         for w in options.whitelist:
-            whitelist.extend(make_whitelist(w))
+            whitelist.extend(make_wordlist(w))
+    if options.abbreviation:
+        for f in options.abbreviation:
+            abbreviations.extend(make_wordlist(f))
     if options.cache:
-        glosbe_cache.setup(options.cache)
+        if options.glosbe:
+            glosbe_cache.setup(options.cache_dir)
     if options.exclude:
         for e in options.exclude:
             whitelist.extend(e.split(','))
+    if options.load_cache:
+        for f in options.load_cache:
+            whitelist.extend(make_wordlist(Cache.get_gene_filename(options.cache_dir, f)))
+            abbreviations.extend(make_wordlist(Cache.get_abbreviation_filename(options.cache_dir, f)))
 
 
 def main():

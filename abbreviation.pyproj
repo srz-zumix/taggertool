@@ -13,7 +13,7 @@
     <Name>abbreviation</Name>
     <RootNamespace>abbreviation</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>sample\fused_iutest.hpp --glosbe --cache cache</CommandLineArguments>
+    <CommandLineArguments>sample\fused_iutest.hpp --load-cache glosbe --cache --list-words</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <Environment>PATH=%ProgramFiles(x86)%\Mecab\bin;%PATH%</Environment>
   </PropertyGroup>
