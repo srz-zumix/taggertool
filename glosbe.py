@@ -68,7 +68,11 @@ class Glosbe:
             'pretty' : 'true'
         }
         r = requests.get(Glosbe.api_url, params=payload)
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except:
+            print(r.json()['message'])
+            raise
         return r.json()
 
 

@@ -13,7 +13,7 @@
     <Name>abbreviation</Name>
     <RootNamespace>abbreviation</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>sample\iutest_ver.hpp --glosbe</CommandLineArguments>
+    <CommandLineArguments>sample\fused_iutest.hpp --glosbe --cache cache</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <Environment>PATH=%ProgramFiles(x86)%\Mecab\bin;%PATH%</Environment>
   </PropertyGroup>
@@ -28,6 +28,9 @@
   <ItemGroup>
     <Compile Include="abbreviation.py" />
     <Compile Include="keywords.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="glosbe.pyc" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

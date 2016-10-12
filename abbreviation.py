@@ -20,8 +20,38 @@ whitelist = []
 gene = []
 langkeywords = []
 
+class Cache:
+    gene = []
+    abbreviations = []
+    gene_file = None
+    abbreviations_file = None
+
+    def __init__(self, name):
+        self.name = name
+
+    def setup(self, dir):
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+        self.gene_file = open(dir + '/' + self.name + '.txt', 'r+')
+        self.abbreviations_file = open(dir + '/' + self.name + '_abbreviations.txt', 'r+')
+        for w in self.gene_file:
+            self.gene.append(w)
+        for w in self.abbreviations_file:
+            self.abbreviations.append(w)
+
+    def add(self, word):
+        if self.gene_file:
+            self.gene_file.writelines(word)
+
+    def add_abbreviation(self, word):
+        if self.abbreviations_file:
+            self.abbreviations_file.writelines(word)
+
+
+glosbe_cache = Cache('glosbe')
 words = {}
 checked_words = []
+
 
 def parse_command_line():
     parser = ArgumentParser()
@@ -44,6 +74,7 @@ def parse_command_line():
         help='whitelist file'
     )
     parser.add_argument(
+        '-e',
         '--exclude',
         action='append',
         help='exlude word'
@@ -52,6 +83,10 @@ def parse_command_line():
         '--glosbe',
         action='store_true',
         help='use online translation service (glosbe)'
+    )
+    parser.add_argument(
+        '--cache',
+        help='online translation cache directory'
     )
     parser.add_argument(
         'file',
@@ -95,7 +130,7 @@ def checkcomment(text, block_comment):
     return text, block_comment
 
 
-def is_suspicion_glosbe(word):
+def is_suspicion_glosbe_impl(word):
     try:
         r = Glosbe.Translate(word, Glosbe.EN, Glosbe.JA)
         if r['result'] == 'ok':
@@ -109,11 +144,21 @@ def is_suspicion_glosbe(word):
                         if meaning['language'] == Glosbe.EN:
                             # XXX の略語って意味はダメ
                             if 'abbreviation' in meaning['text']:
+                                glosbe_cache.add_abbreviation(word)
                                 return True
+                    glosbe_cache.add(word)
                     return False
     except:
-        pass
+        print("Unexpected error:", sys.exc_info()[0])
+        raise
     return True
+
+
+def is_suspicion_glosbe(word):
+    if is_suspicion_glosbe_impl(word):
+        return True
+    else:
+        return False
 
 
 def is_whitelist(word):
@@ -123,6 +168,8 @@ def is_whitelist(word):
         return True
     # 辞書にあったら除外
     if word in gene:
+        return True
+    if word in glosbe_cache.gene:
         return True
     return False
 
@@ -191,6 +238,9 @@ def is_suspicion(word):
         return False
     if is_whitelist(word):
         return False
+    # 略語リストにあったら即アウト
+    if word in glosbe_cache.abbreviations:
+        return True
     # 過去形
     if not is_suspicion_past(word, length):
         return False
@@ -304,6 +354,8 @@ def setup():
     if options.whitelist:
         for w in options.whitelist:
             whitelist.extend(make_whitelist(w))
+    if options.cache:
+        glosbe_cache.setup(options.cache)
     if options.exclude:
         for e in options.exclude:
             whitelist.extend(e.split(','))
