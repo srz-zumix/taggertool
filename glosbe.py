@@ -13,6 +13,8 @@ class Glosbe:
     English = EN
     Japanese = JA
 
+    count = 0
+
     api_url = 'https://glosbe.com/gapi/translate'
 
     def __init__(self):
@@ -67,12 +69,9 @@ class Glosbe:
             'phrase' : phrase,
             'pretty' : 'true'
         }
+        Glosbe.count += 1
         r = requests.get(Glosbe.api_url, params=payload)
-        try:
-            r.raise_for_status()
-        except:
-            print(r.json()['message'])
-            raise
+        r.raise_for_status()
         return r.json()
 
 

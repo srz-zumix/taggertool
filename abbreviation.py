@@ -6,6 +6,7 @@ import sys
 import re
 import codecs
 import treetaggerwrapper
+import requests
 
 import keywords
 
@@ -190,6 +191,11 @@ def is_suspicion_glosbe_impl(word):
                                 return True
                     glosbe_cache.add(word)
                     return False
+    except requests.HTTPError as e:
+        if e.response.status_code == 429:
+            print("request count: ", Glosbe.count)
+        print("Http error:", e.message)
+        raise
     except:
         print("Unexpected error:", sys.exc_info()[0])
         raise
@@ -236,13 +242,61 @@ def is_suspicion_past(word, length):
 
 def is_suspicion_past_participle(word, length):
     if length > 2 and word.endswith('en'):
-        if is_whitelist(word[:-1]):
+        if is_whitelist(word[:-2]):
             return False
         if is_whitelist(word[:-1]):
             return False
         if re.match('.*[a-z]{2,2}en$', word):
+            if is_whitelist(word[:-3]):
+                return False
             if is_whitelist(word[:-3] + 'e'):
                 return False
+    return True
+
+
+def is_suspicion_post_suffix(word, length):
+    # er
+    if length > 2 and word.endswith('er'):
+        if is_whitelist(word[:-2]):
+            return False
+        if is_whitelist(word[:-1]):
+            return False
+        if length > 3 and word.endswith('ier'):
+            if is_whitelist(word[:-3] + 'y'):
+                return False
+        if re.match('.*[a-z]{2,2}er$', word):
+            if is_whitelist(word[:-3]):
+                return False
+            if is_whitelist(word[:-3] + 'e'):
+                return False
+    # or
+    if length > 2 and word.endswith('or'):
+        if is_whitelist(word[:-2]):
+            return False
+        if is_whitelist(word[:-2] + 'e'):
+            return False
+    # ist
+    if length > 3 and word.endswith('ist'):
+        if is_whitelist(word[:-3]):
+            return False
+    # ant
+    if length > 3 and word.endswith('ant'):
+        if is_whitelist(word[:-3]):
+            return False
+        if is_whitelist(word[:-3] + 'y'):
+            return False
+    return True
+
+
+def is_suspicion_pre_suffix(word, length):
+    # un
+    if length > 2 and word.startswith('un'):
+        if is_whitelist(word[2:]):
+            return False
+    # re
+    if length > 2 and word.startswith('re'):
+        if is_whitelist(word[2:]):
+            return False
     return True
 
 
@@ -294,6 +348,12 @@ def is_suspicion(word):
         return False
     # 複数形
     if not is_suspicion_plural(word, length):
+        return False
+    # 接頭辞
+    if not is_suspicion_pre_suffix(word, length):
+        return False
+    # 接尾辞
+    if not is_suspicion_post_suffix(word, length):
         return False
     # Web API
     if options.glosbe:
