@@ -27,6 +27,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="abbreviation.py" />
+    <Compile Include="dejizo.py" />
     <Compile Include="glosbe.py" />
     <Compile Include="keywords.py" />
     <Compile Include="wordsapi.py" />
