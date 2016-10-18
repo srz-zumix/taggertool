@@ -10,6 +10,7 @@ import requests
 
 import keywords
 
+from dejizo import Dejizo
 from glosbe import Glosbe
 from argparse import ArgumentParser
     
@@ -69,7 +70,7 @@ class Cache:
             self.abbreviations_file.flush()
 
 
-glosbe_cache = Cache('glosbe')
+service_cache = {}
 words = {}
 checked_words = []
 
@@ -110,6 +111,11 @@ def parse_command_line():
         '--glosbe',
         action='store_true',
         help='use online translation service (glosbe)'
+    )
+    parser.add_argument(
+        '--dejizo',
+        action='store_true',
+        help='use online service (dejizo)'
     )
     parser.add_argument(
         '--cache',
@@ -187,9 +193,9 @@ def is_suspicion_glosbe_impl(word):
                         if meaning['language'] == Glosbe.EN:
                             # XXX の略語って意味はダメ
                             if 'abbreviation' in meaning['text']:
-                                glosbe_cache.add_abbreviation(word)
+                                service_cache['glosbe'].add_abbreviation(word)
                                 return True
-                    glosbe_cache.add(word)
+                    service_cache['glosbe'].add(word)
                     return False
     except requests.HTTPError as e:
         if e.response.status_code == 429:
@@ -209,6 +215,22 @@ def is_suspicion_glosbe(word):
         return False
 
 
+def is_suspicion_dejizo_impl(word):
+    try:
+        r = Dejizo.search(word)
+        print Dejizo.response_to_result(r)
+    except:
+        pass
+    return False
+
+
+def is_suspicion_dejizo(word):
+    if is_suspicion_dejizo_impl(word):
+        return True
+    else:
+        return False
+
+
 def is_whitelist(word):
     if word in whitelist:
         return True
@@ -217,8 +239,9 @@ def is_whitelist(word):
     # 辞書にあったら除外
     if word in gene:
         return True
-    if word in glosbe_cache.gene:
-        return True
+    for cache in service_cache.values():
+        if word in cache.gene:
+            return True
     return False
 
 
@@ -335,8 +358,9 @@ def is_suspicion(word):
     if is_whitelist(word):
         return False
     # 略語リストにあったら即アウト
-    if word in glosbe_cache.abbreviations:
-        return True
+    for cache in service_cache.values():
+        if word in cache.abbreviations:
+            return True
     # 過去形
     if not is_suspicion_past(word, length):
         return False
@@ -358,6 +382,9 @@ def is_suspicion(word):
     # Web API
     if options.glosbe:
         if not is_suspicion_glosbe(word):
+            return False
+    if options.dejizo:
+        if not is_suspicion_dejizo(word):
             return False
     return True
 
@@ -466,7 +493,13 @@ def setup():
             abbreviations.extend(make_wordlist(f))
     if options.cache:
         if options.glosbe:
-            glosbe_cache.setup(options.cache_dir)
+            cache = Cache('glosbe')
+            cache.setup(options.cache_dir)
+            service_cache['glosbe'] = cache
+        if options.dejizo:
+            cache = Cache('dejizo')
+            cache.setup(options.cache_dir)
+            service_cache['dejizo'] = cache
     if options.exclude:
         for e in options.exclude:
             whitelist.extend(e.split(','))

@@ -6,6 +6,8 @@ import json
 import sys
 import pprint
 
+from xml.etree import ElementTree
+
 class Dejizo:
     api_url = 'http://public.dejizo.jp/NetDicV09.asmx/SearchDicItemLite'
 
@@ -20,13 +22,26 @@ class Dejizo:
             'Scope' : 'HEADWORD',
             'Match' : 'EXACT',
             'Merge' : 'AND',
-            'Prof' : 'JSON',
-            'PageSize' : 1,
+            'Prof' : 'XHTML',
+            'PageSize' : 20,
             'PageIndex' : 0
         }
         r = requests.get(Dejizo.api_url, params=payload)
         r.raise_for_status()
         return r
+        
+    @staticmethod
+    def response_to_result(response):
+        if not response.ok:
+            return { 'ok' : False, 'status_code': response.status_code }
+        tree = ElementTree.fromstring(response.content)
+        result = { 'ok' : True, 'status_code': response.status_code }
+        for elem in tree.getiterator():
+            if '}' in elem.tag:
+                result[elem.tag.split('}')[1]] = elem.text
+            else:
+                result[elem.tag] = elem.text
+        return result
 
 
 if __name__ == '__main__':
@@ -35,4 +50,4 @@ if __name__ == '__main__':
         r = Dejizo.search(sys.argv[1])
     else:
         r = Dejizo.search('test')
-    pprint.pprint(r)
+    print r.text
