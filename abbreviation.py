@@ -218,10 +218,16 @@ def is_suspicion_glosbe(word):
 def is_suspicion_dejizo_impl(word):
     try:
         r = Dejizo.search(word)
-        print Dejizo.response_to_result(r)
+        d = Dejizo.response_to_result(r)
+        if d['ok'] and 'SearchDicItemResult' in d:
+            result = d['SearchDicItemResult']
+            count = int(result['ItemCount'])
+            if count > 0:
+                service_cache['dejizo'].add(word)
+                return False
     except:
         pass
-    return False
+    return True
 
 
 def is_suspicion_dejizo(word):
