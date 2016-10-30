@@ -43,14 +43,16 @@ def etree_to_dict(t):
 
 class Dejizo:
     api_url = 'http://public.dejizo.jp/NetDicV09.asmx/SearchDicItemLite'
+    EJdict = 'EJdict'
+    DailyEJL = 'DailyEJL'
 
     def __init__(self):
         pass
 
     @staticmethod
-    def search(phrase):
+    def search(phrase, dic):
         payload = { 
-            'Dic' : 'EJdict',
+            'Dic' : dic,
             'Word' : phrase,
             'Scope' : 'HEADWORD',
             'Match' : 'EXACT',
@@ -76,8 +78,8 @@ class Dejizo:
 if __name__ == '__main__':
     #sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
     if len(sys.argv) > 1:
-        r = Dejizo.search(sys.argv[1])
+        r = Dejizo.search(sys.argv[1], Dejizo.EJdict)
     else:
-        r = Dejizo.search('test')
+        r = Dejizo.search('test', Dejizo.EJdict)
     print(r.content)
     pprint.pprint(Dejizo.response_to_result(r))

@@ -91,3 +91,5 @@ ENV/
 #
 .vs/
 sample/*.html
+log.txt
+temp/*

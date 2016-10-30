@@ -215,9 +215,9 @@ def is_suspicion_glosbe(word):
         return False
 
 
-def is_suspicion_dejizo_impl(word):
+def is_suspicion_dejizo_impl(word, dict):
     try:
-        r = Dejizo.search(word)
+        r = Dejizo.search(word, dict)
         d = Dejizo.response_to_result(r)
         if d['ok'] and 'SearchDicItemResult' in d:
             result = d['SearchDicItemResult']
@@ -231,10 +231,11 @@ def is_suspicion_dejizo_impl(word):
 
 
 def is_suspicion_dejizo(word):
-    if is_suspicion_dejizo_impl(word):
+    if is_suspicion_dejizo_impl(word, Dejizo.DailyEJL):
         return True
-    else:
-        return False
+    if is_suspicion_dejizo_impl(word, Dejizo.EJdict):
+        return True
+    return False
 
 
 def is_whitelist(word):
@@ -435,8 +436,11 @@ def check(filepath):
 
 def printresult(filepath):
     if options.list_words:
-        for k,v in sorted(words.items(), key=lambda x: len(x[1])):
-            print("{0}(N): warning: \"{1}\": is ok ??".format(filepath, k))
+        for k,v in sorted(words.items(), key=lambda x: x[0]):
+            if len(v) > 1:
+                print("{0}({1}): warning: \"{2}\": is ok ?? ({3})".format(filepath, v[0], k, len(v)))
+            else:
+                print("{0}({1}): warning: \"{2}\": is ok ??".format(filepath, v[0], k))
     else:
         for k,v in sorted(words.items(), key=lambda x: len(x[1])):
             for line in v:
