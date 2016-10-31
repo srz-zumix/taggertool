@@ -133,9 +133,9 @@ def parse_command_line():
         help='translation cache directory'
     )
     parser.add_argument(
-        '--list-words',
+        '--list-all',
         action='store_true',
-        help='list up words only'
+        help='list up all location'
     )
     parser.add_argument(
         'file',
@@ -435,16 +435,16 @@ def check(filepath):
 
 
 def printresult(filepath):
-    if options.list_words:
+    if options.list_all:
+        for k,v in sorted(words.items(), key=lambda x: len(x[1])):
+            for line in v:
+                print("{0}({1}): warning: \"{2}\": is ok ??".format(filepath, line, k))
+    else:
         for k,v in sorted(words.items(), key=lambda x: x[0]):
             if len(v) > 1:
                 print("{0}({1}): warning: \"{2}\": is ok ?? ({3})".format(filepath, v[0], k, len(v)))
             else:
                 print("{0}({1}): warning: \"{2}\": is ok ??".format(filepath, v[0], k))
-    else:
-        for k,v in sorted(words.items(), key=lambda x: len(x[1])):
-            for line in v:
-                print("{0}({1}): warning: \"{2}\": is ok ??".format(filepath, line, k))
 
 
 def checkfile(f):
