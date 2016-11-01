@@ -87,12 +87,14 @@ def parse_command_line():
         '-g',
         '--gene',
         action='append',
+        metavar='FILE',
         help='exlude word'
     )
     parser.add_argument(
         '-w',
         '--whitelist',
         action='append',
+        metavar='FILE',
         help='whitelist file'
     )
     parser.add_argument(
@@ -125,11 +127,13 @@ def parse_command_line():
     parser.add_argument(
         '--load-cache',
         action='append',
+        metavar='NAME',
         help='load translation cache'
     )
     parser.add_argument(
         '--cache-dir',
-        default='cache',
+        default=None,
+        metavar='DIR',
         help='translation cache directory'
     )
     parser.add_argument(
@@ -492,6 +496,8 @@ def setup():
     global gene
     global whitelist
     global abbreviations
+    if options.cache_dir is None:
+        optins.cache_dir = os.path.join(os.path.dirname(__file__), 'cache')
     if options.gene:
         for g in options.gene:
             gene.extend(make_gene(g))
