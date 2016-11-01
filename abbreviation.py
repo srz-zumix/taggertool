@@ -497,7 +497,7 @@ def setup():
     global whitelist
     global abbreviations
     if options.cache_dir is None:
-        optins.cache_dir = os.path.join(os.path.dirname(__file__), 'cache')
+        options.cache_dir = os.path.join(os.path.dirname(__file__), 'cache')
     if options.gene:
         for g in options.gene:
             gene.extend(make_gene(g))
