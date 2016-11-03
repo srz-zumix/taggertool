@@ -142,6 +142,11 @@ def parse_command_line():
         help='list up all location'
     )
     parser.add_argument(
+        '--ignore-noexists',
+        action='store_true',
+        help='ignore option file not exists'
+    )
+    parser.add_argument(
         'file',
         metavar='FILE/DIR',
         nargs='+',
@@ -474,22 +479,30 @@ def isgeneword(s):
 
 def make_gene(file):
     gene = []
-    f = open(file, 'r')
-    for line in f:
-        word = line.strip()
-        if isgeneword(word):
-            gene.append(word.lower())
+    if not options.ignore_noexists or os.path.exists(file):
+        f = open(file, 'r')
+        for line in f:
+            word = line.strip()
+            if isgeneword(word):
+                gene.append(word.lower())
     return gene
 
 
 def make_wordlist(file):
     wordlist = []
-    f = open(file, 'r')
-    for line in f:
-        word = line.strip()
-        if isalpha(word):
-            wordlist.append(word.lower())
+    if not options.ignore_noexists or os.path.exists(file):
+        f = open(file, 'r')
+        for line in f:
+            word = line.strip()
+            if isalpha(word):
+                wordlist.append(word.lower())
     return wordlist
+
+
+def setup_cache(name):
+    cache = Cache(name)
+    cache.setup(options.cache_dir)
+    service_cache[name] = cache
 
 
 def setup():
@@ -509,13 +522,9 @@ def setup():
             abbreviations.extend(make_wordlist(f))
     if options.cache:
         if options.glosbe:
-            cache = Cache('glosbe')
-            cache.setup(options.cache_dir)
-            service_cache['glosbe'] = cache
+            setup_cache('glosbe')
         if options.dejizo:
-            cache = Cache('dejizo')
-            cache.setup(options.cache_dir)
-            service_cache['dejizo'] = cache
+            setup_cache('dejizo')
     if options.exclude:
         for e in options.exclude:
             whitelist.extend(e.split(','))

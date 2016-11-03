@@ -309,6 +309,12 @@ cppext = [ '.c', '.cpp', '.cxx', '.cc', '.h', '.hpp', '.hxx', '.ipp' ]
 csext = [ '.cs' ]
 
 
+def appendix(d):
+    for word in d:
+        if '_' in word:
+            d.append(word.replace('_', ''))
+
+
 def getkeywords(file):
     langkeywords = []
     root, ext = os.path.splitext(file)
@@ -321,4 +327,5 @@ def getkeywords(file):
     elif ext in csext:
         langkeywords.extend(csharpkeywords)
         langkeywords.extend(csharpwords)
+    appendix(langkeywords)
     return langkeywords
