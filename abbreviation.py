@@ -496,6 +496,8 @@ def make_wordlist(file):
             word = line.strip()
             if isalpha(word):
                 wordlist.append(word.lower())
+    else:
+        print(file + ': ignore')
     return wordlist
 
 
