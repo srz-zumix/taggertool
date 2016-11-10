@@ -5,6 +5,7 @@ import requests
 import json
 import sys
 import pprint
+import codecs
 
 from xml.etree import ElementTree
 
@@ -42,7 +43,8 @@ def etree_to_dict(t):
 
 
 class Dejizo:
-    api_url = 'http://public.dejizo.jp/NetDicV09.asmx/SearchDicItemLite'
+    api_search_url = 'http://public.dejizo.jp/NetDicV09.asmx/SearchDicItemLite'
+    api_getitem_url = 'http://public.dejizo.jp/NetDicV09.asmx/GetDicItemLite'
     EJdict = 'EJdict'
     DailyEJL = 'DailyEJL'
 
@@ -61,9 +63,35 @@ class Dejizo:
             'PageSize' : 20,
             'PageIndex' : 0
         }
-        r = requests.get(Dejizo.api_url, params=payload)
+        r = requests.get(Dejizo.api_search_url, params=payload)
         r.raise_for_status()
         return r
+
+    @staticmethod
+    def get(id, dic):
+        payload = { 
+            'Dic' : dic,
+            'Item' : id,
+            'Prof' : 'XHTML',
+            'Loc' : '',
+        }
+        r = requests.get(Dejizo.api_getitem_url, params=payload)
+        r.raise_for_status()
+        return r
+
+    @staticmethod
+    def result_to_ids(result):
+        ids = []
+        if result['ok'] and 'SearchDicItemResult' in result:
+            titlelist = result['SearchDicItemResult']['TitleList']
+            if titlelist:
+                title = titlelist['DicItemTitle']
+                if isinstance(title, list):
+                    for item in title:
+                        ids.append(item['ItemID'])
+                else:
+                    ids.append(title['ItemID'])
+        return ids
 
     @staticmethod
     def response_to_result(response):
@@ -74,12 +102,33 @@ class Dejizo:
         result.update(etree_to_dict(tree))
         return result
 
+    @staticmethod
+    def get_body(result):
+        if result['ok'] and 'GetDicItemResult' in result:
+            r = result['GetDicItemResult']
+            try:
+                return r['Body']['div']['div']
+            except:
+                pass
+        return None
+
 
 if __name__ == '__main__':
     #sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 2:
+        r = Dejizo.search(sys.argv[1], sys.argv[2])
+    elif len(sys.argv) > 1:
         r = Dejizo.search(sys.argv[1], Dejizo.EJdict)
     else:
         r = Dejizo.search('test', Dejizo.EJdict)
     print(r.content)
-    pprint.pprint(Dejizo.response_to_result(r))
+    d = Dejizo.response_to_result(r)
+    pprint.pprint(d)
+    ids = Dejizo.result_to_ids(d)
+    print(ids)
+    for id in ids:
+        gr = Dejizo.get(id, Dejizo.EJdict)
+        print(gr.content)
+        dd = Dejizo.response_to_result(gr)
+        pprint.pprint(dd)
+        print(Dejizo.get_body(dd))

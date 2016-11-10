@@ -23,6 +23,12 @@ gene = []
 abbreviations = []
 langkeywords = []
 
+class Location:
+    def __init__(self, file, line):
+        self.file = file
+        self.line = line
+
+
 class Cache:
     gene = []
     abbreviations = []
@@ -223,6 +229,15 @@ def is_suspicion_glosbe(word):
     else:
         return False
 
+def is_abbreviation_dejizo_impl(search_result, dict):
+    for id in Dejizo.result_to_ids(search_result):
+        r = Dejizo.get(id, dict)
+        d = Dejizo.response_to_result(r)
+        body = Dejizo.get_body(d)
+        if u'化学記号' in body:
+            return True
+    return False
+
 
 def is_suspicion_dejizo_impl(word, dict):
     try:
@@ -232,18 +247,29 @@ def is_suspicion_dejizo_impl(word, dict):
             result = d['SearchDicItemResult']
             count = int(result['ItemCount'])
             if count > 0:
-                service_cache['dejizo'].add(word)
-                return False
+                if len(word) <= 2:
+                    if is_abbreviation_dejizo_impl(d, dict):
+                        service_cache['dejizo'].add_abbreviation(word)
+                        return -1
+                return 0
     except:
         pass
-    return True
+    return 1
 
 
 def is_suspicion_dejizo(word):
-    if is_suspicion_dejizo_impl(word, Dejizo.DailyEJL):
+    # どちらかの辞書に略語としてあったら即時 True
+    ret = is_suspicion_dejizo_impl(word, Dejizo.DailyEJL)
+    if ret < 0:
         return True
-    if is_suspicion_dejizo_impl(word, Dejizo.EJdict):
+    ret2 = is_suspicion_dejizo_impl(word, Dejizo.EJdict)
+    if ret2 < 0:
         return True
+    # どちらの辞書にもなかったら True
+    if ret > 0 and ret2 > 0:
+        return True
+    # どちらかの辞書にあったらキャッシュに登録
+    service_cache['dejizo'].add(word)
     return False
 
 
@@ -411,7 +437,7 @@ def text_transform(text):
     return re.sub(r_sign, ' ', text)
 
 
-def checktagger(text, line):
+def checktagger(filepath, text, line):
     global words
     global checked_words
     tags_plain = tagger.TagText(text)
@@ -421,10 +447,11 @@ def checktagger(text, line):
             continue
         word = tag.word.lower()
         if not word in checked_words:
+            location = Location(filepath, line)
             if words.has_key(word):
-                words[word].append(line)
+                words[word].append(location)
             elif is_suspicion(word):
-                words[word] = [line]
+                words[word] = [location]
             else:
                 checked_words.append(word)
 
@@ -439,28 +466,28 @@ def check(filepath):
         text, block_comment = checkcomment(text, block_comment)
         if not block_comment:
             if len(text) > 0:
-                checktagger(text_transform(text), line_count)
+                checktagger(filepath, text_transform(text), line_count)
         line_count += 1
 
 
-def printresult(filepath):
+def printresult():
     if options.list_all:
         for k,v in sorted(words.items(), key=lambda x: len(x[1])):
-            for line in v:
-                print("{0}({1}): warning: \"{2}\": is ok ??".format(filepath, line, k))
+            for location in v:
+                print("{0}({1}): warning: \"{2}\": is ok ??".format(location.file, location.line, k))
     else:
         for k,v in sorted(words.items(), key=lambda x: x[0]):
+            location = v[0]
             if len(v) > 1:
-                print("{0}({1}): warning: \"{2}\": is ok ?? ({3})".format(filepath, v[0], k, len(v)))
+                print("{0}({1}): warning: \"{2}\": is ok ?? ({3})".format(location.file, location.line, k, len(v)))
             else:
-                print("{0}({1}): warning: \"{2}\": is ok ??".format(filepath, v[0], k))
+                print("{0}({1}): warning: \"{2}\": is ok ??".format(location.file, location.line, k))
 
 
 def checkfile(f):
     global langkeywords
     langkeywords = keywords.getkeywords(f)
     check(f)
-    printresult(f)
 
 
 def checkdir(dir):
@@ -545,6 +572,7 @@ def main():
             checkdir(f)
         else:
             checkfile(f)
+    printresult()
 
 
 if __name__ == '__main__':
