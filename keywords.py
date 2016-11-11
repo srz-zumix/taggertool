@@ -1,6 +1,8 @@
 import os
 
-cppwords = [  'uint'
+cppwords = [  'cpp'
+            , 'hpp'
+            , 'uint'
             , 'ulong'
             ]
 

@@ -573,7 +573,7 @@ def main():
         else:
             checkfile(f)
     printresult()
-
+    print('==== end ====')
 
 if __name__ == '__main__':
     main()
