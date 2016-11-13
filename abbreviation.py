@@ -213,10 +213,12 @@ def is_suspicion_glosbe_impl(word):
                     service_cache['glosbe'].add(word)
                     return False
     except requests.HTTPError as e:
+        print("Http error:", e.message)
         if e.response.status_code == 429:
             print("request count: ", Glosbe.count)
-        print("Http error:", e.message)
-        raise
+            options.glosbe = False
+        else:
+            raise
     except:
         print("Unexpected error:", sys.exc_info()[0])
         raise
