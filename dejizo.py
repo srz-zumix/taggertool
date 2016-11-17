@@ -78,6 +78,13 @@ class Dejizo:
         r = requests.get(Dejizo.api_getitem_url, params=payload)
         r.raise_for_status()
         return r
+    
+    @staticmethod
+    def is_getable(phrase, dic):
+        if dic == Dejizo.DailyEJL:
+            if phrase[0] != 'a' and phrase != 'A':
+                return False
+        return True
 
     @staticmethod
     def result_to_ids(result):
@@ -103,32 +110,48 @@ class Dejizo:
         return result
 
     @staticmethod
-    def get_body(result):
+    def get_body_from_result(result):
         if result['ok'] and 'GetDicItemResult' in result:
             r = result['GetDicItemResult']
             try:
                 return r['Body']['div']['div']
             except:
                 pass
+            try:
+                return r['Body']['div']
+            except:
+                pass
         return None
+
+    @staticmethod
+    def get_body(response):
+        if not response.ok:
+            return None
+        tree = ElementTree.fromstring(response.content)
+        ns = { 'ns' : 'http://btonic.est.co.jp/NetDic/NetDicV09' }
+        body = tree.find('.//ns:Body', namespaces=ns)
+        def innertext(tag):
+            return (tag.text or '') + ''.join(innertext(e) for e in tag) + (tag.tail or '')
+        return innertext(body)
 
 
 if __name__ == '__main__':
     #sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
+    dic = Dejizo.EJdict
+    phrase = 'test'
     if len(sys.argv) > 2:
-        r = Dejizo.search(sys.argv[1], sys.argv[2])
-    elif len(sys.argv) > 1:
-        r = Dejizo.search(sys.argv[1], Dejizo.EJdict)
-    else:
-        r = Dejizo.search('test', Dejizo.EJdict)
+        dic = sys.argv[2]
+    if len(sys.argv) > 1:
+        phrase = sys.argv[1]
+ 
+    r = Dejizo.search(phrase, dic)
     print(r.content)
     d = Dejizo.response_to_result(r)
     pprint.pprint(d)
     ids = Dejizo.result_to_ids(d)
     print(ids)
-    for id in ids:
-        gr = Dejizo.get(id, Dejizo.EJdict)
-        print(gr.content)
-        dd = Dejizo.response_to_result(gr)
-        pprint.pprint(dd)
-        print(Dejizo.get_body(dd))
+    if Dejizo.is_getable(phrase, dic):
+        for id in ids:
+            gr = Dejizo.get(id, dic)
+            print(gr.content)
+            print(Dejizo.get_body(gr))

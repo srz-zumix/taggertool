@@ -7,6 +7,7 @@ import re
 import codecs
 import treetaggerwrapper
 import requests
+import unicodedata
 
 import keywords
 
@@ -172,6 +173,11 @@ def isalpha(s):
     return r_alpha.match(s) is not None
 
 
+r_alphasign = re.compile(r'^[!-~]+$')
+def isalphasign(s):
+    return r_alphasign.match(s) is not None
+
+
 r_block_comment_begin = re.compile('(.*)/\*.*')
 r_block_comment_end = re.compile('.*\*/(.*)')
 line_comment = '//'
@@ -231,16 +237,35 @@ def is_suspicion_glosbe(word):
     else:
         return False
 
-def is_abbreviation_dejizo_impl(search_result, dict):
-    for id in Dejizo.result_to_ids(search_result):
-        r = Dejizo.get(id, dict)
-        d = Dejizo.response_to_result(r)
-        body = Dejizo.get_body(d)
-        if u'化学記号' in body:
-            return True
+
+def is_abbreviation_dejizo_word_impl(body):
+    #if u'化学記号' in body:
+    #    return True
+    #if u'（…）' in body:
+    #    return True
+    # 英数と特定の記号のみなら略語とする
+    # e.g. =refarence
+    nbody = unicodedata.normalize('NFKC', body)
+    if isalphasign(nbody):
+        return True
     return False
 
 
+def is_abbreviation_dejizo_impl(search_result, dict):
+    ids = Dejizo.result_to_ids(search_result)
+    if len(ids) == 0:
+        return False
+    for id in ids:
+        r = Dejizo.get(id, dict)
+        body = Dejizo.get_body(r).strip()
+        if not is_abbreviation_dejizo_word_impl(body):
+            return False
+    return True
+
+
+# retval  0 = ヒット
+# retval  1 = ノーヒット
+# retval -1 = 略語
 def is_suspicion_dejizo_impl(word, dict):
     try:
         r = Dejizo.search(word, dict)
@@ -249,17 +274,28 @@ def is_suspicion_dejizo_impl(word, dict):
             result = d['SearchDicItemResult']
             count = int(result['ItemCount'])
             if count > 0:
-                if len(word) <= 2:
-                    if is_abbreviation_dejizo_impl(d, dict):
-                        service_cache['dejizo'].add_abbreviation(word)
-                        return -1
-                return 0
+                if len(word) > 4:
+                    return 0
+                # 短い単語は詳細を get して調べる
+                if Dejizo.is_getable(word, dict):
+                    try:
+                        if is_abbreviation_dejizo_impl(d, dict):
+                            service_cache['dejizo'].add_abbreviation(word)
+                            return -1
+                        else:
+                            return 0
+                    except:
+                        print("Unexpected error:", sys.exc_info()[0])
+                        pass
     except:
         pass
     return 1
 
 
 def is_suspicion_dejizo(word):
+    # 2文字以下は略語かどうかの判別がつけにくいため除外
+    if len(word) <= 2:
+        return False
     # どちらかの辞書に略語としてあったら即時 True
     ret = is_suspicion_dejizo_impl(word, Dejizo.DailyEJL)
     if ret < 0:
