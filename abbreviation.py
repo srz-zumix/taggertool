@@ -496,18 +496,29 @@ def checktagger(filepath, text, line):
                 checked_words.append(word)
 
 
+def readline(f):
+    try:
+        return f.readline()
+    except:
+        return ""
+
+
 def check(filepath):
     filename = os.path.basename(filepath)
     f = codecs.open(filepath, 'r', encoding='utf-8-sig')
+    print('check: {0}'.format(filename))
     line_count = 1
     block_comment = False
-    for line in f:
+    line = readline(f)
+    while line:
         text = line.strip()
         text, block_comment = checkcomment(text, block_comment)
         if not block_comment:
             if len(text) > 0:
                 checktagger(filepath, text_transform(text), line_count)
         line_count += 1
+        line = readline(f)
+    f.close()
 
 
 def printresult():
