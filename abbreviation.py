@@ -520,6 +520,7 @@ def printresult():
                 print("{0}({1}): warning: \"{2}\": is ok ?? ({3})".format(location.file, location.line, k, len(v)))
             else:
                 print("{0}({1}): warning: \"{2}\": is ok ??".format(location.file, location.line, k))
+        print("Total number detected: {0}".format(len(words)))
 
 
 def checkfile(f):
