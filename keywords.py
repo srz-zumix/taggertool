@@ -2,9 +2,12 @@ import os
 
 programwords =  [ 'cygwin'
                 , 'cuda'
+                , 'csv'
                 , 'doxygen'
                 , 'freebsd'
                 , 'iphone'
+                , 'jis'
+                , 'junit'
                 , 'linux'
                 , 'microsoft'
                 , 'mingw'
@@ -12,6 +15,7 @@ programwords =  [ 'cygwin'
                 , 'nacl'
                 , 'posix'
                 , 'ppapi'
+                , 'shiftjis'
                 , 'solaris'
                 , 'sunos'
                 , 'unicode'
@@ -21,6 +25,8 @@ programwords =  [ 'cygwin'
                 ]
 
 cppwords = [  'cpp'
+            , '_bsd_source'
+            , '_xopen_source'
             , 'cxx'
             , 'hpp'
             , 'ipp'
@@ -136,10 +142,16 @@ cppkeywords = [  'alignas'
                ]
 
 stdlibwords = [  'std'
+               , '__cxa_demangle'
+               , '_mkdir'
+               , 'abi'
                , 'addrinfo'
+               , 'ai_addrlen'
                , 'alloc'
+               , 'arg'
                , 'argc'
                , 'argv'
+               , 'arpa'
                , 'atexit'
                , 'bufsiz'
                , 'cbegin'
@@ -178,6 +190,7 @@ stdlibwords = [  'std'
                , 'getaddrinfo'
                , 'getenv'
                , 'getcwd'
+               , 'getpid'
                , 'gettimeofday'
                , 'glibcpp'
                , 'glibcxx'
@@ -195,6 +208,7 @@ stdlibwords = [  'std'
                , 'memset'
                , 'mutex'
                , 'nanosleep'
+               , 'netdb'
                , 'nothrow'
                , 'npos'
                , 'ostream'
@@ -209,6 +223,7 @@ stdlibwords = [  'std'
                , 'setprecision'
                , 'setvbuf'
                , 'snprintf'
+               , 'ssize_t'
                , 'sstream'
                , 'stdarg'
                , 'stderr'
@@ -229,6 +244,7 @@ stdlibwords = [  'std'
                , 'strstream'
                , 'strtok'
                , 'strtol'
+               , 'sysctl'
                , 'tellg'
                , 'timeb'
                , 'timespec'
@@ -257,20 +273,27 @@ stdlibwords = [  'std'
                , 'wctype'
                , 'wmain'
                , 'wstring'
+               , 'xlocnum'
+               , 'xtree'
                ]
 
 win32keywords = [ 'windows'
+                , '__debugbreak'
+                , '_call_reportfault'
                 , 'afx'
                 , 'countof'
                 , 'cpprtti'
                 , 'crtdbg'
                 , 'dbghelp'
+                , 'dll'
                 , 'farproc'
+                , 'hmenu'
                 , 'hmodule'
                 , 'hresult'
                 , 'lpstr'
                 , 'lpwstr'
                 , 'msvc'
+                , 'pminidump'
                 , 'winapi'
                 , 'winnt'
                 , 'wsacleanup'
@@ -278,6 +301,13 @@ win32keywords = [ 'windows'
                 , 'wsaget'
                 , 'wsastartup'
                 ]
+
+mfckeywords = [ 'mfc'
+              , 'carray'
+              , 'ccontainer'
+              , 'clist'
+              , 'cmap'
+              ]
 
 csharpkeywords = [  'abstract'
                   , 'as'
@@ -372,6 +402,9 @@ def appendix(d):
     for word in d:
         if '_' in word:
             d.append(word.replace('_', ''))
+            for s in word.split('_'):
+                if len(s) > 2:
+                    d.append(s)
 
 
 def getkeywords(file):
@@ -382,6 +415,7 @@ def getkeywords(file):
         langkeywords.extend(cppwords)
         langkeywords.extend(stdlibwords)
         langkeywords.extend(win32keywords)
+        langkeywords.extend(mfckeywords)
         langkeywords.extend(foramtwords)
     elif ext in csext:
         langkeywords.extend(csharpkeywords)
