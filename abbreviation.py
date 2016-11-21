@@ -470,9 +470,11 @@ def is_suspicion(word):
 
 
 r_sign = re.compile('[!-/:-@[-`{-~]')
+r_transform = re.compile('([a-z0-9])([A-Z])(?=[A-Z]*[a-z\s]|$)')
 def text_transform(text):
-    text = re.sub("([a-z0-9])([A-Z])(?=[a-z])", lambda x: x.group(1) + "_" + x.group(2), text)
-    return re.sub(r_sign, ' ', text)
+    text = re.sub(r_sign, ' ', text)
+    text = re.sub(r_transform, lambda x: x.group(1) + " " + x.group(2), text)
+    return text
 
 
 def checktagger(filepath, text, line):
