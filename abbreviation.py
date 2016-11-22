@@ -149,6 +149,11 @@ def parse_command_line():
         help='list up all location'
     )
     parser.add_argument(
+        '--encoding',
+        default='utf-8-sig',
+        help='set file encoding'
+    )
+    parser.add_argument(
         '--ignore-noexists',
         action='store_true',
         help='ignore option file not exists'
@@ -505,7 +510,7 @@ def readline(f):
 
 def check(filepath):
     filename = os.path.basename(filepath)
-    f = codecs.open(filepath, 'r', encoding='utf-8-sig')
+    f = codecs.open(filepath, 'r', encoding=options.encoding)
     print('check: {0}'.format(filename))
     line_count = 1
     block_comment = False
