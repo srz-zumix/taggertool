@@ -154,6 +154,11 @@ def parse_command_line():
         help='set file encoding'
     )
     parser.add_argument(
+        '--extension',
+        default='(c|h|cpp|hpp|cxx|hxx|cc|hh|ipp|cu|m|mm)',
+        help='file extension matcher'
+    )
+    parser.add_argument(
         '--ignore-noexists',
         action='store_true',
         help='ignore option file not exists'
@@ -510,6 +515,9 @@ def readline(f):
 
 def check(filepath):
     filename = os.path.basename(filepath)
+    if not re.match(options.extension, os.path.splitext(filename)[1].strip('.')):
+        print('skip: {0}: not match extension [{1}]'.format(filename, options.extension))
+        return
     f = codecs.open(filepath, 'r', encoding=options.encoding)
     print('check: {0}'.format(filename))
     line_count = 1

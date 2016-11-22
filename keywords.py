@@ -408,6 +408,7 @@ csharpwords = [  'int'
 
 cppext = [ '.c', '.cpp', '.cxx', '.cc', '.h', '.hpp', '.hxx', '.ipp' ]
 csext = [ '.cs' ]
+objcext = [ '.mm', '.m' ]
 
 
 def appendix(d):
@@ -432,5 +433,10 @@ def getkeywords(file):
     elif ext in csext:
         langkeywords.extend(csharpkeywords)
         langkeywords.extend(csharpwords)
+    elif ext in objcext:
+        langkeywords.extend(cppkeywords)
+        langkeywords.extend(cppwords)
+        langkeywords.extend(stdlibwords)
+        langkeywords.extend(foramtwords)
     appendix(langkeywords)
     return langkeywords
