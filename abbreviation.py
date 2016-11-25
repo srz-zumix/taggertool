@@ -210,6 +210,18 @@ def checkcomment(text, block_comment):
     return text, block_comment
 
 
+def check_abbreviation_glosbe(word, d):
+    if d['language'] == Glosbe.EN:
+        # XXX の略語って意味はダメ
+        if 'abbreviation' in d['text']:
+            service_cache['glosbe'].add_abbreviation(word)
+            return True
+        # ゴミ？
+        if 'dust' in d['text']:
+            return True
+    return False
+
+
 def is_suspicion_glosbe_impl(word):
     try:
         r = Glosbe.Translate(word, Glosbe.EN, Glosbe.JA)
@@ -218,14 +230,15 @@ def is_suspicion_glosbe_impl(word):
             if len(tuc) == 0:
                 return True
             for t in tuc:
-                # 1 の辞書だけ使う
-                if 1 in t['authors']:
-                    for meaning in t['meanings']:
-                        if meaning['language'] == Glosbe.EN:
-                            # XXX の略語って意味はダメ
-                            if 'abbreviation' in meaning['text']:
-                                service_cache['glosbe'].add_abbreviation(word)
+                # 1,2736 の辞書だけ使う
+                if any(x in [1, 2736] for x in t['authors']):
+                    if 'meanings' in t:
+                        for meaning in t['meanings']:
+                            if check_abbreviation_glosbe(word, meaning):
                                 return True
+                    elif 'phrase' in t:
+                        if check_abbreviation_glosbe(word, t['phrase']):
+                            return True
                     service_cache['glosbe'].add(word)
                     return False
     except requests.HTTPError as e:
@@ -236,12 +249,15 @@ def is_suspicion_glosbe_impl(word):
         else:
             raise
     except:
-        print("Unexpected error:", sys.exc_info()[0])
+        print("Unexpected error: \"{0}\" :".format(word), sys.exc_info()[0])
         raise
     return True
 
 
 def is_suspicion_glosbe(word):
+    # 2文字以下は略語かどうかの判別がつけにくいため除外
+    if len(word) <= 2:
+        return False
     if is_suspicion_glosbe_impl(word):
         return True
     else:
