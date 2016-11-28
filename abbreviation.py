@@ -5,7 +5,6 @@ import os
 import sys
 import re
 import codecs
-import treetaggerwrapper
 import requests
 import unicodedata
 
@@ -14,9 +13,15 @@ import keywords
 from dejizo import Dejizo
 from glosbe import Glosbe
 from argparse import ArgumentParser
-    
-tagdir = os.getenv('TREETAGGER_ROOT')
-tagger = treetaggerwrapper.TreeTagger(TAGLANG='en',TAGDIR=tagdir)
+
+try:
+    #import treetaggerwrapper
+    #tagdir = os.getenv('TREETAGGER_ROOT')
+    #tagger = treetaggerwrapper.TreeTagger(TAGLANG='en',TAGDIR=tagdir)
+    tagger = None
+except:
+    tagger = None
+
 options = None
 
 whitelist = []
@@ -522,6 +527,21 @@ def checktagger(filepath, text, line):
                 checked_words.append(word)
 
 
+def checksplit(filepath, text, line):
+    global words
+    global checked_words
+    for tag in text.split():
+        word = tag.lower()
+        if not word in checked_words:
+            location = Location(filepath, line)
+            if words.has_key(word):
+                words[word].append(location)
+            elif is_suspicion(word):
+                words[word] = [location]
+            else:
+                checked_words.append(word)
+
+
 def readline(f):
     try:
         return f.readline()
@@ -544,7 +564,10 @@ def check(filepath):
         text, block_comment = checkcomment(text, block_comment)
         if not block_comment:
             if len(text) > 0:
-                checktagger(filepath, text_transform(text), line_count)
+                if tagger is None:
+                    checksplit(filepath, text_transform(text), line_count)
+                else:
+                    checktagger(filepath, text_transform(text), line_count)
         line_count += 1
         line = readline(f)
     f.close()
