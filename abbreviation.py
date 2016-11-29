@@ -388,7 +388,7 @@ def is_suspicion_past_participle(word, length):
     return True
 
 
-def is_suspicion_post_suffix(word, length):
+def is_suspicion_other_post_suffix(word, length):
     # er
     if length > 2 and word.endswith('er'):
         if is_whitelist(word[:-2]):
@@ -422,18 +422,6 @@ def is_suspicion_post_suffix(word, length):
     return True
 
 
-def is_suspicion_pre_suffix(word, length):
-    # un
-    if length > 2 and word.startswith('un'):
-        if is_whitelist(word[2:]):
-            return False
-    # re
-    if length > 2 and word.startswith('re'):
-        if is_whitelist(word[2:]):
-            return False
-    return True
-
-
 def is_suspicion_progressive(word, length):
     if length > 3 and word.endswith('ing'):
         if is_whitelist(word[:-3]):
@@ -459,6 +447,41 @@ def is_suspicion_plural(word, length):
     return True
 
 
+def is_suspicion_post_suffix(word, length):
+    # 過去形
+    if not is_suspicion_past(word, length):
+        return False
+    # 過去分詞
+    if not is_suspicion_past_participle(word, length):
+        return False
+    # 進行形
+    if not is_suspicion_progressive(word, length):
+        return False
+    # 複数形
+    if not is_suspicion_plural(word, length):
+        return False
+    # 他
+    if not is_suspicion_other_post_suffix(word, length):
+        return False
+    return True
+
+
+def is_suspicion_pre_suffix(word, length):
+    # un
+    if length > 2 and word.startswith('un'):
+        if is_whitelist(word[2:]):
+            return False
+        elif not is_suspicion_post_suffix(word[2:], length-2):
+            return False
+    # re
+    if length > 2 and word.startswith('re'):
+        if is_whitelist(word[2:]):
+            return False
+        elif not is_suspicion_post_suffix(word[2:], length-2):
+            return False
+    return True
+
+
 def is_suspicion(word):
     length = len(word)
     # 1文字だけは除外
@@ -472,23 +495,11 @@ def is_suspicion(word):
     for cache in service_cache.values():
         if word in cache.abbreviations:
             return True
-    # 過去形
-    if not is_suspicion_past(word, length):
-        return False
-    # 過去分詞
-    if not is_suspicion_past_participle(word, length):
-        return False
-    # 進行形
-    if not is_suspicion_progressive(word, length):
-        return False
-    # 複数形
-    if not is_suspicion_plural(word, length):
+    # 接尾辞
+    if not is_suspicion_post_suffix(word, length):
         return False
     # 接頭辞
     if not is_suspicion_pre_suffix(word, length):
-        return False
-    # 接尾辞
-    if not is_suspicion_post_suffix(word, length):
         return False
     # Web API
     if options.glosbe:
@@ -542,11 +553,27 @@ def checksplit(filepath, text, line):
                 checked_words.append(word)
 
 
+def detect_encoding(path, default_encoding):
+    encoding_list = [ 'utf-8', 'utf-8-sig', 'shift_jis', 'euc_jp' ]
+    encoding_list.remove(default_encoding)
+    encoding_list.insert(0, default_encoding)
+    for encoding in encoding_list:
+        f = codecs.open(path, 'r', encoding=encoding)
+        try:
+            f.readline()
+            f.close()
+            return encoding
+        except:
+            f.close()
+    return default_encoding
+
+
 def readline(f):
     try:
         return f.readline()
     except:
-        return ""
+        print("Unexpected error:", sys.exc_info()[0])
+        return None
 
 
 def check(filepath):
@@ -554,7 +581,8 @@ def check(filepath):
     if not re.match(options.extension, os.path.splitext(filename)[1].strip('.')):
         print('skip: {0}: not match extension [{1}]'.format(filename, options.extension))
         return
-    f = codecs.open(filepath, 'r', encoding=options.encoding)
+    encoding = detect_encoding(filepath, options.encoding)
+    f = codecs.open(filepath, 'r', encoding=encoding)
     print('check: {0}'.format(filename))
     line_count = 1
     block_comment = False
