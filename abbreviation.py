@@ -28,6 +28,9 @@ whitelist = []
 gene = []
 abbreviations = []
 langkeywords = []
+default_encoding = 'utf-8-sig'
+prev_detect_encoding = ''
+default_encoding_change_count = 0
 
 exclude_dir = [ '.git', '.svn', '.vs', 'temp', 'tmp' ]
 
@@ -157,7 +160,7 @@ def parse_command_line():
     )
     parser.add_argument(
         '--encoding',
-        default='utf-8-sig',
+        default=None,
         help='set file encoding'
     )
     parser.add_argument(
@@ -555,7 +558,10 @@ def checksplit(filepath, text, line):
                 checked_words.append(word)
 
 
-def detect_encoding(path, default_encoding):
+def detect_encoding(path):
+    global default_encoding
+    global prev_detect_encoding
+    global default_encoding_change_count
     encoding_list = [ 'utf-8', 'utf-8-sig', 'shift_jis', 'euc_jp' ]
     encoding_list.remove(default_encoding)
     encoding_list.insert(0, default_encoding)
@@ -564,6 +570,14 @@ def detect_encoding(path, default_encoding):
         try:
             f.readline()
             f.close()
+            if encoding == prev_detect_encoding:
+                default_encoding_change_count += 1
+                if default_encoding_change_count >= 3:
+                    default_encoding = encoding
+                else:
+                    default_encoding_change_count = 0
+            else:
+                prev_detect_encoding = encoding
             return encoding
         except:
             f.close()
@@ -583,7 +597,9 @@ def check(filepath):
     if not re.match(options.extension, os.path.splitext(filename)[1].strip('.')):
         print('skip: {0}: not match extension [{1}]'.format(filename, options.extension))
         return
-    encoding = detect_encoding(filepath, options.encoding)
+    encoding = options.encoding
+    if encoding is None:
+        encoding = detect_encoding(filepath)
     f = codecs.open(filepath, 'r', encoding=encoding)
     print('check: {0}'.format(filename))
     line_count = 1
