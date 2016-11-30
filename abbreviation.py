@@ -29,6 +29,8 @@ gene = []
 abbreviations = []
 langkeywords = []
 
+exclude_dir = [ '.git', '.svn', '.vs', 'temp', 'tmp' ]
+
 class Location:
     def __init__(self, file, line):
         self.file = file
@@ -160,7 +162,7 @@ def parse_command_line():
     )
     parser.add_argument(
         '--extension',
-        default='(c|h|cpp|hpp|cxx|hxx|cc|hh|ipp|cu|m|mm)',
+        default='(c|h|cpp|hpp|cxx|hxx|cc|hh|ipp|cu|m|mm)$',
         help='file extension matcher'
     )
     parser.add_argument(
@@ -626,7 +628,11 @@ def checkdir(dir):
     for d in os.listdir(dir):
         d = os.path.join(dir, d)
         if os.path.isdir(d):
-            checkdir(d)
+            basename = os.path.basename(d)
+            if basename not in exclude_dir:
+                print(">>>> Entering directory {0}".format(basename))
+                checkdir(d)
+                print("<<<< Leaving  directory {0}".format(basename))
         else:
             checkfile(d)
 
@@ -704,8 +710,9 @@ def main():
             checkdir(f)
         else:
             checkfile(f)
+    print('==== begin ====')
     printresult()
-    print('==== end ====')
+    print('====  end  ====')
 
 if __name__ == '__main__':
     main()
