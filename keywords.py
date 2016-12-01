@@ -245,6 +245,8 @@ stdlibwords = [  'std'
                , 'setw'
                , 'setvbuf'
                , 'snprintf'
+               , 'sockaddr_in'
+               , 'sprintf'
                , 'ssize_t'
                , 'sstream'
                , 'stdarg'
@@ -255,21 +257,32 @@ stdlibwords = [  'std'
                , 'stdlib'
                , 'stdout'
                , 'strcasecmp'
+               , 'strcat'
                , 'strchr'
                , 'strcmp'
+               , 'strcmpi'
+               , 'strcpy'
+               , 'strdup'
                , 'streambuf'
                , 'strerror'
                , 'stricmp'
                , 'strlen'
+               , 'strlwr'
                , 'strncmp'
                , 'strncpy'
+               , 'strnicmp'
                , 'strnlen'
                , 'strrchr'
+               , 'strset'
                , 'strstr'
                , 'strstream'
                , 'strtok'
                , 'strtol'
+               , 'strtombs'
+               , 'strtoul'
+               , 'strupr'
                , 'substr'
+               , 'swprintf'
                , 'sysctl'
                , 'tellg'
                , 'timeb'
@@ -294,11 +307,27 @@ stdlibwords = [  'std'
                , 'vsprintf'
                , 'vswprintf'
                , 'wcscasecmp'
+               , 'wcscat'
+               , 'wcschr'
                , 'wcscmp'
+               , 'wcscmpi'
+               , 'wcscpy'
+               , 'wcsdup'
                , 'wcsicmp'
                , 'wcslen'
-               , 'wcstombs'
+               , 'wcslwr'
+               , 'wcsncmp'
+               , 'wcsncpy'
+               , 'wcsnicmp'
+               , 'wcsnlen'
+               , 'wcsrchr'
+               , 'wcsset'
                , 'wcsstr'
+               , 'wcstok'
+               < 'wcstol'
+               , 'wcstombs'
+               < 'wcstoul'
+               , 'wcsupr'
                , 'wctype'
                , 'wmain'
                , 'wstring'
@@ -336,6 +365,8 @@ win32keywords = [ 'windows'
                 , 'sem_noalignmentfaultexcept'
                 , 'sem_nogpfaulterrorbox'
                 , 'sem_noopenfileerrorbox'
+                , 'shlobj'
+                , 'shlwapi'
                 , 'systemtime'
                 , 'winapi'
                 , 'winnt'
@@ -445,30 +476,73 @@ objcext = [ '.mm', '.m' ]
 
 def appendix(d):
     for word in d:
-        if '_' in word:
+        if '_' in str(word):
             d.append(word.replace('_', ''))
             for s in word.split('_'):
                 if len(s) > 2 and s not in d:
                     d.append(s)
 
 
-def getkeywords(file):
+def make_cppkeywords():
     langkeywords = programwords
-    root, ext = os.path.splitext(file)
-    if ext in cppext:
-        langkeywords.extend(cppkeywords)
-        langkeywords.extend(cppwords)
-        langkeywords.extend(stdlibwords)
-        langkeywords.extend(win32keywords)
-        langkeywords.extend(mfckeywords)
-        langkeywords.extend(foramtwords)
-    elif ext in csext:
-        langkeywords.extend(csharpkeywords)
-        langkeywords.extend(csharpwords)
-    elif ext in objcext:
-        langkeywords.extend(cppkeywords)
-        langkeywords.extend(cppwords)
-        langkeywords.extend(stdlibwords)
-        langkeywords.extend(foramtwords)
+    langkeywords.extend(cppkeywords)
+    langkeywords.extend(cppwords)
+    langkeywords.extend(stdlibwords)
+    langkeywords.extend(win32keywords)
+    langkeywords.extend(mfckeywords)
+    langkeywords.extend(foramtwords)
     appendix(langkeywords)
     return langkeywords
+
+
+def make_csharpkeywords():
+    langkeywords = programwords
+    langkeywords.extend(csharpkeywords)
+    langkeywords.extend(csharpwords)
+    appendix(langkeywords)
+    return langkeywords
+
+
+def make_objckeywords():
+    langkeywords = programwords
+    langkeywords.extend(cppkeywords)
+    langkeywords.extend(cppwords)
+    langkeywords.extend(stdlibwords)
+    langkeywords.extend(foramtwords)
+    appendix(langkeywords)
+    return langkeywords
+
+
+def make_defaultkeywords():
+    langkeywords = programwords
+    appendix(langkeywords)
+    return langkeywords
+
+
+cppkeywords_all = None
+csharpkeywords_all = None
+objckeywords_all = None
+defaultkeywords_all = None
+
+def getkeywords(file):
+    global cppkeywords_all
+    global csharpkeywords_all
+    global objckeywords_all
+    global defaultkeywords_all
+    root, ext = os.path.splitext(file)
+    if ext in cppext:
+        if cppkeywords_all is None:
+            cppkeywords_all = make_cppkeywords()
+        return cppkeywords_all
+    elif ext in csext:
+        if csharpkeywords_all is None:
+            csharpkeywords_all = make_csharpkeywords()
+        return csharpkeywords_all
+    elif ext in objcext:
+        if objckeywords_all is None:
+            objckeywords_all = make_objckeywords()
+        return objckeywords_all
+
+    if defaultkeywords_all is None:
+        defaultkeywords_all = make_defaultkeywords()
+    return defaultkeywords_all

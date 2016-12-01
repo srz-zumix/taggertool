@@ -593,6 +593,7 @@ def readline(f):
 
 
 def check(filepath):
+    global langkeywords
     filename = os.path.basename(filepath)
     if not re.match(options.extension, os.path.splitext(filename)[1].strip('.')):
         print('skip: {0}: not match extension [{1}]'.format(filename, options.extension))
@@ -602,6 +603,7 @@ def check(filepath):
         encoding = detect_encoding(filepath)
     f = codecs.open(filepath, 'r', encoding=encoding)
     print('check: {0}'.format(filename))
+    langkeywords = keywords.getkeywords(filepath)
     line_count = 1
     block_comment = False
     line = readline(f)
@@ -635,8 +637,6 @@ def printresult():
 
 
 def checkfile(f):
-    global langkeywords
-    langkeywords = keywords.getkeywords(f)
     check(f)
 
 
