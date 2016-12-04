@@ -220,15 +220,46 @@ def checkcomment(text, block_comment):
     return text, block_comment
 
 
-def check_abbreviation_glosbe(word, d):
+def check_abbreviation_glosbe(d):
     if d['language'] == Glosbe.EN:
+        text = d['text']
+        # (online gaming) は除外
+        if '(online gaming)' in text:
+            return False
         # XXX の略語って意味はダメ
-        if 'abbreviation' in d['text']:
-            service_cache['glosbe'].add_abbreviation(word)
+        if 'abbreviation' in text:
             return True
         # ゴミ？
-        if 'dust' in d['text']:
+        if 'dust' == text:
             return True
+    return False
+
+
+def check_abbreviation_glosbe_tuc(t):
+    if 'meanings' in t:
+        for meaning in t['meanings']:
+            if check_abbreviation_glosbe(meaning):
+                return True
+    elif 'phrase' in t:
+        if check_abbreviation_glosbe(t['phrase']):
+            return True
+    return False
+
+
+def has_glosbe_ja_meaings(t):
+    if 'meanings' in t:
+        for meaning in t['meanings']:
+            if meaning['language'] == Glosbe.JA:
+                return True
+    return False
+
+
+def has_glosbe_computing_meaings(t):
+    if 'meanings' in t:
+        for meaning in t['meanings']:
+            if meaning['language'] == Glosbe.EN:
+                if '(computing)' in meaning['text']:
+                    return True
     return False
 
 
@@ -239,18 +270,31 @@ def is_suspicion_glosbe_impl(word):
             tuc = r['tuc']
             if len(tuc) == 0:
                 return True
+            has_dict = False
+            has_optional_abbreviation = False
+            has_ja = False
             for t in tuc:
-                # 1,2736 の辞書だけ使う
-                if any(x in [1, 2736] for x in t['authors']):
-                    if 'meanings' in t:
-                        for meaning in t['meanings']:
-                            if check_abbreviation_glosbe(word, meaning):
-                                return True
-                    elif 'phrase' in t:
-                        if check_abbreviation_glosbe(word, t['phrase']):
-                            return True
+                if has_glosbe_computing_meaings(t):
                     service_cache['glosbe'].add(word)
                     return False
+                if has_glosbe_ja_meaings(t):
+                    has_ja = True
+                # 1,2736 の辞書だけ使う
+                if any(x in [1, 2736] for x in t['authors']):
+                    if check_abbreviation_glosbe_tuc(t):
+                        service_cache['glosbe'].add_abbreviation(word)
+                        return True
+                    has_dict = True
+                # それ以外の辞書のうち略語判定のみに使用
+                elif any(x in [91945] for x in t['authors']):
+                    if check_abbreviation_glosbe_tuc(t):
+                        has_optional_abbreviation = True
+            if (not has_ja) and has_optional_abbreviation:
+                service_cache['glosbe'].add_abbreviation(word)
+                return True
+            if has_dict:
+                service_cache['glosbe'].add(word)
+                return False
     except requests.HTTPError as e:
         print("Http error:", e.message)
         if e.response.status_code == 429:
