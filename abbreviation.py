@@ -227,7 +227,11 @@ def check_abbreviation_glosbe(d):
         if '(online gaming)' in text:
             return False
         # XXX の略語って意味はダメ
-        if 'abbreviation' in text:
+        if 'abbreviation of' in text:
+            return True
+        if 'abbreviation for' in text:
+            return True
+        if '(colloquial abbreviation)' in text:
             return True
         # ゴミ？
         if 'dust' == text:
