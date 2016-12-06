@@ -165,7 +165,7 @@ def parse_command_line():
     )
     parser.add_argument(
         '--extension',
-        default='(c|h|cpp|hpp|cxx|hxx|cc|hh|ipp|cu|m|mm)$',
+        default='(c|h|cpp|hpp|cxx|hxx|cc|hh|ipp|cu|m|mm|cs)$',
         help='file extension matcher'
     )
     parser.add_argument(
