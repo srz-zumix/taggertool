@@ -101,6 +101,28 @@ class Dejizo:
         return ids
 
     @staticmethod
+    def result_to_titles(result):
+        ids = []
+        if result['ok'] and 'SearchDicItemResult' in result:
+            titlelist_parent = result['SearchDicItemResult']['TitleList']
+            if titlelist_parent:
+                titlelist = titlelist_parent['DicItemTitle']
+                if isinstance(titlelist, list):
+                    return titlelist
+                else:
+                    return [titlelist]
+        return None
+
+    @staticmethod
+    def get_title_text(dicTitle):
+        if 'Title' in dicTitle:
+            r = dicTitle['Title']
+            while isinstance(r, dict):
+                r = r.values()[0]
+            return r
+        return None
+
+    @staticmethod
     def response_to_result(response):
         if not response.ok:
             return { 'ok' : False, 'status_code': response.status_code }
@@ -143,15 +165,23 @@ if __name__ == '__main__':
         dic = sys.argv[2]
     if len(sys.argv) > 1:
         phrase = sys.argv[1]
- 
-    r = Dejizo.search(phrase, dic)
-    print(r.content)
-    d = Dejizo.response_to_result(r)
-    pprint.pprint(d)
-    ids = Dejizo.result_to_ids(d)
-    print(ids)
-    if Dejizo.is_getable(phrase, dic):
-        for id in ids:
-            gr = Dejizo.get(id, dic)
-            print(gr.content)
-            print(Dejizo.get_body(gr))
+    def dejizo(phrase, dic):
+        r = Dejizo.search(phrase, dic)
+        print(r.content)
+        d = Dejizo.response_to_result(r)
+        pprint.pprint(d)
+        ids = Dejizo.result_to_ids(d)
+        print(ids)
+        if Dejizo.is_getable(phrase, dic):
+            for id in ids:
+                gr = Dejizo.get(id, dic)
+                print(gr.content)
+                print(Dejizo.get_body(gr))
+        if len(ids) > 0:
+            return True
+        return False
+    if not dejizo(phrase, dic):
+        if dic == Dejizo.DailyEJL:
+            dejizo(phrase, Dejizo.EJdict)
+        else:
+            dejizo(phrase, Dejizo.DailyEJL)

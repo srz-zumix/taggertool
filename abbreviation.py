@@ -336,11 +336,14 @@ def is_abbreviation_dejizo_word_impl(body):
 
 
 def is_abbreviation_dejizo_impl(search_result, dict):
-    ids = Dejizo.result_to_ids(search_result)
-    if len(ids) == 0:
+    titles = Dejizo.result_to_titles(search_result)
+    if titles is None:
         return False
-    for id in ids:
-        r = Dejizo.get(id, dict)
+    for title in titles:
+        # タイトルがすべて大文字だったら略語
+        if Dejizo.get_title_text(title).isupper():
+            return True
+        r = Dejizo.get(title['ItemID'], dict)
         body = Dejizo.get_body(r).strip()
         if not is_abbreviation_dejizo_word_impl(body):
             return False
@@ -369,7 +372,7 @@ def is_suspicion_dejizo_impl(word, dict):
                         else:
                             return 0
                     except:
-                        print("Unexpected error:", sys.exc_info()[0])
+                        print("Unexpected error: " + word + " :" , sys.exc_info()[0])
                         pass
     except:
         pass
