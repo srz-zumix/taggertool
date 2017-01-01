@@ -26,3 +26,4 @@ crc
 asm
 and
 std
+adp

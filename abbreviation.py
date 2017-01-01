@@ -223,9 +223,12 @@ def checkcomment(text, block_comment):
 def check_abbreviation_glosbe(d):
     if d['language'] == Glosbe.EN:
         text = d['text']
-        # (online gaming) は除外
-        if '(online gaming)' in text:
-            return False
+        m = re.match('^\(([a-zA-Z,\s]*)\)', text)
+        # タグから除外
+        if m:
+            for tag in m.group(1).split(','):
+                if tag in ['online gaming', 'Internet']:
+                    return False
         # XXX の略語って意味はダメ
         if 'abbreviation of' in text:
             return True
