@@ -13,6 +13,7 @@ import keywords
 from dejizo import Dejizo
 from glosbe import Glosbe
 from argparse import ArgumentParser
+from difflib import SequenceMatcher
 
 try:
     #import treetaggerwrapper
@@ -198,6 +199,34 @@ def isalphasign(s):
     return r_alphasign.match(s) is not None
 
 
+r_equal_word = re.compile(r'^=([A-Za-z]+)$')
+def get_equalword(s):
+    m = r_equal_word.match(s)
+    if m:
+        return m.group(1)
+    return None
+
+
+def is_spell_diff_word(word1, word2):
+    m = SequenceMatcher()
+    m.set_seq2(word2)
+    m.set_seq1(word1)
+    check_a_e = True
+    for tag, i1, i2, j1, j2 in m.get_opcodes():
+        if tag == "replace":
+            if (i1 != j1) or (i2 != j2):
+                check_a_e = False
+                break
+            w1 = word1[i1:i2]
+            w2 = word2[j1:j2]
+            if not ((w1 == 'e' and w2 == 'a') or (w1 == 'a' and w2 == 'e')):
+                check_a_e = False
+                break
+    if check_a_e:
+        return True
+    return False
+
+
 r_block_comment_begin = re.compile('(.*)/\*.*')
 r_block_comment_end = re.compile('.*\*/(.*)')
 line_comment = '//'
@@ -325,7 +354,7 @@ def is_suspicion_glosbe(word):
         return False
 
 
-def is_abbreviation_dejizo_word_impl(body):
+def is_abbreviation_dejizo_word_impl(word, body):
     #if u'化学記号' in body:
     #    return True
     #if u'（…）' in body:
@@ -333,12 +362,15 @@ def is_abbreviation_dejizo_word_impl(body):
     # 英数と特定の記号のみなら略語とする
     # e.g. =refarence
     nbody = unicodedata.normalize('NFKC', body)
+    eqword = get_equalword(nbody)
+    if eqword:
+        return not is_spell_diff_word(word, eqword.lower())
     if isalphasign(nbody):
         return True
     return False
 
 
-def is_abbreviation_dejizo_impl(search_result, dict):
+def is_abbreviation_dejizo_impl(word, search_result, dict):
     titles = Dejizo.result_to_titles(search_result)
     if titles is None:
         return False
@@ -348,7 +380,7 @@ def is_abbreviation_dejizo_impl(search_result, dict):
             return True
         r = Dejizo.get(title['ItemID'], dict)
         body = Dejizo.get_body(r).strip()
-        if not is_abbreviation_dejizo_word_impl(body):
+        if not is_abbreviation_dejizo_word_impl(word, body):
             return False
     return True
 
@@ -369,7 +401,7 @@ def is_suspicion_dejizo_impl(word, dict):
                 # 短い単語は詳細を get して調べる
                 if Dejizo.is_getable(word, dict):
                     try:
-                        if is_abbreviation_dejizo_impl(d, dict):
+                        if is_abbreviation_dejizo_impl(word, d, dict):
                             service_cache['dejizo'].add_abbreviation(word)
                             return -1
                         else:
