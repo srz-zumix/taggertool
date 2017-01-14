@@ -249,10 +249,11 @@ def checkcomment(text, block_comment):
     return text, block_comment
 
 
+r_glosbe_tag = re.compile('^\(([a-zA-Z,\s]*)\)')
 def check_abbreviation_glosbe(d):
     if d['language'] == Glosbe.EN:
         text = d['text']
-        m = re.match('^\(([a-zA-Z,\s]*)\)', text)
+        m = r_glosbe_tag.match(text)
         # タグから除外
         if m:
             for tag in m.group(1).split(','):
@@ -447,6 +448,7 @@ def is_whitelist(word):
     return False
 
 
+r_past_ed = re.compile('.*[a-z]{2,2}ed$')
 def is_suspicion_past(word, length):
     if length > 2 and word.endswith('ed'):
         if is_whitelist(word[:-2]):
@@ -456,7 +458,7 @@ def is_suspicion_past(word, length):
         if length > 3 and word.endswith('ied'):
             if is_whitelist(word[:-3] + 'y'):
                 return False
-        if re.match('.*[a-z]{2,2}ed$', word):
+        if r_past_ed.match(word):
             if is_whitelist(word[:-3]):
                 return False
         if length > 4 and word.endswith('cked'):
@@ -465,13 +467,14 @@ def is_suspicion_past(word, length):
     return True
 
 
+r_past_e = re.compile('.*[a-z]{2,2}en$')
 def is_suspicion_past_participle(word, length):
     if length > 2 and word.endswith('en'):
         if is_whitelist(word[:-2]):
             return False
         if is_whitelist(word[:-1]):
             return False
-        if re.match('.*[a-z]{2,2}en$', word):
+        if r_past_e.match(word):
             if is_whitelist(word[:-3]):
                 return False
             if is_whitelist(word[:-3] + 'e'):
@@ -479,6 +482,7 @@ def is_suspicion_past_participle(word, length):
     return True
 
 
+r_post_er = re.compile('.*[a-z]{2,2}er$')
 def is_suspicion_other_post_suffix(word, length):
     # er
     if length > 2 and word.endswith('er'):
@@ -489,7 +493,7 @@ def is_suspicion_other_post_suffix(word, length):
         if length > 3 and word.endswith('ier'):
             if is_whitelist(word[:-3] + 'y'):
                 return False
-        if re.match('.*[a-z]{2,2}er$', word):
+        if r_post_er.match(word):
             if is_whitelist(word[:-3]):
                 return False
             if is_whitelist(word[:-3] + 'e'):
@@ -513,13 +517,14 @@ def is_suspicion_other_post_suffix(word, length):
     return True
 
 
+r_ing = re.compile('.*[a-z]{2,2}ing$')
 def is_suspicion_progressive(word, length):
     if length > 3 and word.endswith('ing'):
         if is_whitelist(word[:-3]):
             return False
         if is_whitelist(word[:-3] + 'e'):
             return False
-        if re.match('.*[a-z]{2,2}ing$', word):
+        if r_ing.match(word):
             if is_whitelist(word[:-4]):
                 return False
     return True
