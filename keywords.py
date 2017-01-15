@@ -1,6 +1,6 @@
 import os
 
-programwords =  [ 'alpha'
+commonwords =  [ 'alpha'
                 , 'beta'
                 , 'cygwin'
                 , 'cpplint'
@@ -11,6 +11,7 @@ programwords =  [ 'alpha'
                 , 'endian'
                 , 'euc'
                 , 'freebsd'
+                , 'google'
                 , 'http'
                 , 'https'
                 , 'iphone'
@@ -30,6 +31,7 @@ programwords =  [ 'alpha'
                 , 'solaris'
                 , 'sunos'
                 , 'unicode'
+                , 'url'
                 , 'utf'
                 , 'wandbox'
                 , 'xterm'
@@ -420,6 +422,7 @@ win32keywords = [ 'windows'
                 , 'tcin'
                 , 'tcout'
                 , 'winapi'
+                , 'winapifamily'
                 , 'winnt'
                 , 'wsacleanup'
                 , 'wsadata'
@@ -539,7 +542,7 @@ def appendix(d):
 
 
 def make_cppkeywords():
-    langkeywords = programwords
+    langkeywords = commonwords
     langkeywords.extend(cppkeywords)
     langkeywords.extend(cppwords)
     langkeywords.extend(stdlibwords)
@@ -551,7 +554,7 @@ def make_cppkeywords():
 
 
 def make_csharpkeywords():
-    langkeywords = programwords
+    langkeywords = commonwords
     langkeywords.extend(csharpkeywords)
     langkeywords.extend(csharpwords)
     appendix(langkeywords)
@@ -559,7 +562,7 @@ def make_csharpkeywords():
 
 
 def make_objckeywords():
-    langkeywords = programwords
+    langkeywords = commonwords
     langkeywords.extend(cppkeywords)
     langkeywords.extend(cppwords)
     langkeywords.extend(stdlibwords)
@@ -569,7 +572,7 @@ def make_objckeywords():
 
 
 def make_defaultkeywords():
-    langkeywords = programwords
+    langkeywords = commonwords
     appendix(langkeywords)
     return langkeywords
 
