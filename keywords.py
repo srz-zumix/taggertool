@@ -237,6 +237,7 @@ stdlibwords = [  'std'
                , 'iomanip'
                , 'iostreams'
                , 'inttypes'
+               , 'isatty'
                , 'istringstream'
                , 'iter_swap'
                , 'libcpp'
@@ -259,6 +260,8 @@ stdlibwords = [  'std'
                , 'ostream'
                , 'ostringstream'
                , 'printf'
+               , 'pthread'
+               , 'ptrdiff_t'
                , 'putenv'
                , 'rbegin'
                , 'rdbuf'
@@ -266,6 +269,7 @@ stdlibwords = [  'std'
                , 'regex'
                , 'rend'
                , 'rfind'
+               , 'rmdir'
                , 'seekg'
                , 'setbase'
                , 'setbuf'
@@ -375,6 +379,10 @@ stdlibwords = [  'std'
                , 'xtree'
                ]
 
+predefines = [    '__SUNPRO_CC'
+                , '__SYMBIAN__'
+                ]
+
 win32keywords = [ 'windows'
                 , '__debugbreak'
                 , '__forceinline'
@@ -410,6 +418,7 @@ win32keywords = [ 'windows'
                 , 'lptstr'
                 , 'lpwstr'
                 , 'msvc'
+                , 'ndebug'
                 , 'pminidump'
                 , 'sem_failcriticalerrors'
                 , 'sem_noalignmentfaultexcept'
@@ -545,6 +554,7 @@ def make_cppkeywords():
     langkeywords = commonwords
     langkeywords.extend(cppkeywords)
     langkeywords.extend(cppwords)
+    langkeywords.extend([ s.lower() for s in predefines ])
     langkeywords.extend(stdlibwords)
     langkeywords.extend(win32keywords)
     langkeywords.extend(mfckeywords)
@@ -581,6 +591,17 @@ cppkeywords_all = None
 csharpkeywords_all = None
 objckeywords_all = None
 defaultkeywords_all = None
+
+def getlanguage(file):
+    root, ext = os.path.splitext(file)
+    if ext in cppext:
+        return 'c++'
+    elif ext in csext:
+        return 'c#'
+    elif ext in objcext:
+        return 'obj-c'
+    return None
+
 
 def getkeywords(file):
     global cppkeywords_all

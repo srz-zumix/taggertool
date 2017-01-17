@@ -608,10 +608,12 @@ def is_suspicion(word):
 
 
 r_sign = re.compile('[!-/:-@[-`{-~]')
-r_transform = re.compile('([a-z0-9])([A-Z])(?=[A-Z]*[a-z\s]|$)')
+r_transform  = re.compile('([a-z0-9])([A-Z])(?=[A-Z]*[a-z\s]|$)')
+r_transform2 = re.compile('(\s[A-Z])([A-Z])(?=[a-z])')
 def text_transform(text):
     text = re.sub(r_sign, ' ', text)
-    text = re.sub(r_transform, lambda x: x.group(1) + " " + x.group(2), text)
+    text = re.sub(r_transform , lambda x: x.group(1) + " " + x.group(2), text)
+    text = re.sub(r_transform2, lambda x: x.group(1) + " " + x.group(2), text)
     return text
 
 
@@ -683,6 +685,16 @@ def readline(f):
         return None
 
 
+r_system_include = re.compile(r'^\s*#\s*include\s*<.*>')
+def ischeckline(lang, line):
+    if len(line) > 0:
+        if lang == 'c++':
+            if r_system_include.match(line):
+                return False
+        return True
+    return False
+
+
 def check(filepath):
     global langkeywords
     filename = os.path.basename(filepath)
@@ -694,6 +706,7 @@ def check(filepath):
         encoding = detect_encoding(filepath)
     f = codecs.open(filepath, 'r', encoding=encoding)
     print('check: {0}'.format(filename))
+    lang = keywords.getlanguage(filepath)
     langkeywords = keywords.getkeywords(filepath)
     line_count = 1
     block_comment = False
@@ -702,7 +715,7 @@ def check(filepath):
         text = line.strip()
         text, block_comment = checkcomment(text, block_comment)
         if not block_comment:
-            if len(text) > 0:
+            if ischeckline(lang, line):
                 if tagger is None:
                     checksplit(filepath, text_transform(text), line_count)
                 else:
