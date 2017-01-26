@@ -160,6 +160,11 @@ def parse_command_line():
         help='list up all location'
     )
     parser.add_argument(
+        '--progress',
+        action='store_true',
+        help='print percent progress'
+    )
+    parser.add_argument(
         '--encoding',
         default=None,
         help='set file encoding'
@@ -713,6 +718,7 @@ def check(filepath):
         encoding = detect_encoding(filepath)
     f = codecs.open(filepath, 'r', encoding=encoding)
     print('check: {0}'.format(filename))
+    filesize = os.path.getsize(filepath)
     lang = keywords.getlanguage(filepath)
     langkeywords = keywords.getkeywords(filepath)
     line_count = 1
@@ -729,6 +735,9 @@ def check(filepath):
                     checktagger(filepath, text_transform(text), line_count)
         line_count += 1
         line = readline(f)
+        if options.progress:
+            pos = f.tell()
+            sys.stdout.write('{0:.2f}%'.format(pos*100.0/filesize)+ '\r')
     f.close()
 
 
