@@ -3,3 +3,11 @@ str
 amp
 diff
 mag
+exam
+doc
+lang
+sub
+paren
+tab
+super
+quad

@@ -249,38 +249,41 @@ def checkcomment(text, block_comment):
     return text, block_comment
 
 
-r_glosbe_tag = re.compile('^\(([a-zA-Z,\s]*)\)')
-def check_abbreviation_glosbe(d):
+r_glosbe_tag = re.compile('^\(([a-zA-Z,\s]*)\)(.*)')
+def check_abbreviation_glosbe(word, d):
     if d['language'] == Glosbe.EN:
-        text = d['text']
-        m = r_glosbe_tag.match(text)
+        text = d['text'].lower()
         # タグから除外
+        m = r_glosbe_tag.match(text)
         if m:
+            text = m.group(2).strip()
             for tag in m.group(1).split(','):
-                if tag in ['online gaming', 'Internet']:
-                    return False
+                if tag in ['online gaming', 'internet', 'programing']:
+                    return 1
+                elif tag in ['informal', 'colloquial abbreviation']:
+                    desc = m.group(2).lower().strip()
+                    if re.match('^a\s' + word + '\w', desc):
+                        return -1
         # XXX の略語って意味はダメ
-        if 'abbreviation of' in text:
-            return True
-        if 'abbreviation for' in text:
-            return True
-        if '(colloquial abbreviation)' in text:
-            return True
+        if text.startswith('abbreviation of'):
+            if not text.startswith('abbreviation of ' + word + ' '):
+                return -1
+        if text.startswith('abbreviation for'):
+            if not text.startswith('abbreviation for ' + word + ' '):
+                return -1
         # ゴミ？
         if 'dust' == text:
-            return True
-    return False
+            return -1
+    return 0
 
 
-def check_abbreviation_glosbe_tuc(t):
+def check_abbreviation_glosbe_tuc(word, t):
     if 'meanings' in t:
         for meaning in t['meanings']:
-            if check_abbreviation_glosbe(meaning):
-                return True
+            return check_abbreviation_glosbe(word, meaning)
     elif 'phrase' in t:
-        if check_abbreviation_glosbe(t['phrase']):
-            return True
-    return False
+        return check_abbreviation_glosbe(word, t['phrase'])
+    return 0
 
 
 def has_glosbe_ja_meaings(t):
@@ -318,13 +321,17 @@ def is_suspicion_glosbe_impl(word):
                     has_ja = True
                 # 1,2736 の辞書だけ使う
                 if any(x in [1, 2736] for x in t['authors']):
-                    if check_abbreviation_glosbe_tuc(t):
+                    rs = check_abbreviation_glosbe_tuc(word, t)
+                    if rs < 0:
                         service_cache['glosbe'].add_abbreviation(word)
                         return True
+                    elif rs > 0:
+                        # 許可された単語は即座に非略語を返す
+                        return False
                     has_dict = True
                 # それ以外の辞書のうち略語判定のみに使用
                 elif any(x in [91945] for x in t['authors']):
-                    if check_abbreviation_glosbe_tuc(t):
+                    if check_abbreviation_glosbe_tuc(word, t) < 0:
                         has_optional_abbreviation = True
             if (not has_ja) and has_optional_abbreviation:
                 service_cache['glosbe'].add_abbreviation(word)
