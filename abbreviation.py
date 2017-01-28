@@ -78,11 +78,13 @@ class Cache:
         return dir + '/' + name + '_abbreviations.txt'
 
     def add(self, word):
+        self.gene.append(word)
         if self.gene_file:
             self.gene_file.write(word + '\n')
             self.gene_file.flush()
 
     def add_abbreviation(self, word):
+        self.abbreviations.append(word)
         if self.abbreviations_file:
             self.abbreviations_file.write(word + '\n')
             self.abbreviations_file.flush()
