@@ -165,6 +165,11 @@ def parse_command_line():
         help='print percent progress'
     )
     parser.add_argument(
+        '--no-request-limit',
+        action='store_true',
+        help='no api request limit'
+    )
+    parser.add_argument(
         '--encoding',
         default=None,
         help='set file encoding'
@@ -835,6 +840,8 @@ def setup():
         for f in options.load_cache:
             whitelist.extend(make_wordlist(Cache.get_gene_filename(options.cache_dir, f)))
             abbreviations.extend(make_wordlist(Cache.get_abbreviation_filename(options.cache_dir, f)))
+    if options.no_request_limit:
+        Glosbe.set_safe_mode(False)
 
 
 def main():

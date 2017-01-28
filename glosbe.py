@@ -7,6 +7,9 @@ import sys
 #import codecs
 import pprint
 
+from random import randint
+from time import sleep
+
 class Glosbe:
     EN = 'en'
     JA = 'ja'
@@ -14,6 +17,7 @@ class Glosbe:
     Japanese = JA
 
     count = 0
+    safe_mode = True
 
     api_url = 'https://glosbe.com/gapi/translate'
 
@@ -35,6 +39,10 @@ class Glosbe:
 
     def get_phrases(self, response):
         return Glosbe.GetPhrases(response, self.dst)
+
+    @staticmethod
+    def set_safe_mode(mode):
+        Glosbe.safe_mode = mode
 
     @staticmethod
     def GetMeanings(response, to_lang):
@@ -72,6 +80,8 @@ class Glosbe:
         Glosbe.count += 1
         r = requests.get(Glosbe.api_url, params=payload)
         r.raise_for_status()
+        if Glosbe.safe_mode:
+            sleep(randint(50, 300)/100.0)
         return r.json()
 
 
