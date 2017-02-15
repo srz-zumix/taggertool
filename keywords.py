@@ -790,12 +790,11 @@ def getlanguage(file):
     return None
 
 
-def getkeywords(file):
+def getkeywords_from_ext(ext):
     global cppkeywords_all
     global csharpkeywords_all
     global objckeywords_all
     global defaultkeywords_all
-    root, ext = os.path.splitext(file)
     if ext in cppext:
         if cppkeywords_all is None:
             cppkeywords_all = make_cppkeywords()
@@ -812,3 +811,8 @@ def getkeywords(file):
     if defaultkeywords_all is None:
         defaultkeywords_all = make_defaultkeywords()
     return defaultkeywords_all
+
+
+def getkeywords(file):
+    root, ext = os.path.splitext(file)
+    return getkeywords_from_ext(ext)

@@ -8,7 +8,7 @@ import codecs
 import requests
 import unicodedata
 
-import keywords
+import filereader
 
 from dejizo import Dejizo
 from glosbe import Glosbe
@@ -157,6 +157,11 @@ def parse_command_line():
         help='translation cache directory'
     )
     parser.add_argument(
+        '--diff',
+        action='store_true',
+        help='diff file check'
+    )
+    parser.add_argument(
         '--list-all',
         action='store_true',
         help='list up all location'
@@ -237,28 +242,6 @@ def is_spell_diff_word(word1, word2):
     if check_a_e:
         return True
     return False
-
-
-r_block_comment_begin = re.compile('(.*)/\*.*')
-r_block_comment_end = re.compile('.*\*/(.*)')
-line_comment = '//'
-
-
-def checkcomment(text, block_comment):
-    if block_comment:
-        m = r_block_comment_end.match(text)
-        if m:
-            block_comment = False
-            text = m.group(1)
-    if not block_comment:
-        m = r_block_comment_begin.match(text)
-        if m:
-            block_comment = True
-            text = m.group(1)
-        line_comment_start = text.find(line_comment)
-        if line_comment_start != -1:
-            text = text[:line_comment_start]
-    return text, block_comment
 
 
 r_glosbe_tag = re.compile('^\(([a-zA-Z,\s]*)\)(.*)')
@@ -696,14 +679,6 @@ def detect_encoding(path):
     return default_encoding
 
 
-def readline(f):
-    try:
-        return f.readline()
-    except:
-        print("Unexpected error:", sys.exc_info()[0])
-        return None
-
-
 r_system_include = re.compile(r'^\s*#\s*include\s*<.*>')
 def ischeckline(lang, line):
     if len(line) > 0:
@@ -723,25 +698,23 @@ def check(filepath):
     encoding = options.encoding
     if encoding is None:
         encoding = detect_encoding(filepath)
-    f = codecs.open(filepath, 'r', encoding=encoding)
+    f = filereader.OpenFile(filepath, encoding=encoding)
     print('check: {0}'.format(filename))
-    filesize = os.path.getsize(filepath)
-    lang = keywords.getlanguage(filepath)
-    langkeywords = keywords.getkeywords(filepath)
+    filesize = f.getsize()
+    lang = f.getlanguage()
+    langkeywords = f.getkeywords()
     line_count = 1
-    block_comment = False
-    line = readline(f)
+    line = f.readline()
     while line:
         text = line.strip()
-        text, block_comment = checkcomment(text, block_comment)
-        if not block_comment:
+        if len(text) > 0:
             if ischeckline(lang, line):
                 if tagger is None:
                     checksplit(filepath, text_transform(text), line_count)
                 else:
                     checktagger(filepath, text_transform(text), line_count)
         line_count += 1
-        line = readline(f)
+        line = f.readline()
         if options.progress:
             pos = f.tell()
             sys.stdout.write('{0:.2f}%'.format(pos*100.0/filesize)+ '\r')
