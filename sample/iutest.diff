@@ -1,0 +1,122 @@
+diff --git a/CHANGES b/CHANGES
+index d983aa2..c197cdd 100644
+--- a/CHANGES
++++ b/CHANGES
+@@ -5,6 +5,7 @@ Changes for 1.16.1:
+ * XML_OUTPUT_FILE 環境変数に対応
+ 
+ ** 変更
++* IUTEST_BUILD を非推奨に変更し、IUTEST_MICROVER を追加
+ * Wandbox の更新に合わせて iuwandbox を変更
+ * iuwandbox: --list_compiler のようなオプション名中の _ を - に変更（_ 付きの旧オプションは将来のバージョンで廃止）
+ 
+diff --git a/docs/dev/Makefile b/docs/dev/Makefile
+index c7fdf6e..5796304 100644
+--- a/docs/dev/Makefile
++++ b/docs/dev/Makefile
+@@ -15,3 +15,7 @@ lint:
+ 
+ clean:
+ 	$(RM) -rf html
++
++version-test:
++	make -f VersionTest.mk --no-print-directory
++
+diff --git a/include/gtest/iutest_gtest_ver.hpp b/include/gtest/iutest_gtest_ver.hpp
+index 27bd5e5..ad72f72 100644
+--- a/include/gtest/iutest_gtest_ver.hpp
++++ b/include/gtest/iutest_gtest_ver.hpp
+@@ -6,7 +6,7 @@
+  *
+  * @author      t.shirayanagi
+  * @par         copyright
+- * Copyright (C) 2012-2016, Takazumi Shirayanagi\n
++ * Copyright (C) 2012-2017, Takazumi Shirayanagi\n
+  * This software is released under the new BSD License,
+  * see LICENSE
+ */
+@@ -53,17 +53,22 @@
+ #  endif
+ #endif
+ 
+-#ifndef GTEST_BUILD
++//!< Micro Version
++#ifndef GTEST_MICROVER
+ #  if GTEST_MINORVER == 0x02 && defined(GTEST_HAS_CLONE)
+-#    define GTEST_BUILD     0x01        //!< Build
++#    define GTEST_MICROVER  0x01
+ #  elif GTEST_MINORVER == 0x00
+ // 判断難しい
+-#    define GTEST_BUILD     0x01        //!< Build
++#    define GTEST_MICROVER  0x01
+ #  else
+-#    define GTEST_BUILD     0x00        //!< Build
++#    define GTEST_MICROVER  0x00
+ #  endif
+ #endif
+ 
++#ifndef GTEST_BUILD
++#  define GTEST_BUILD       GTEST_MICROVER  //!< @deprecated
++#endif
++
+ #ifndef GTEST_REVISION
+ #  define GTEST_REVISION    0x00        //!< Revision
+ #endif
+@@ -71,8 +76,8 @@
+ #ifndef GTEST_VER
+ #  define   GTEST_VER       ((GTEST_MAJORVER<<24)   \
+                             |(GTEST_MINORVER<<16)   \
+-                            |(GTEST_BUILD<<8)       \
+-                            |(GTEST_REVISION<<0)    \
++                            |(GTEST_MICROVER<< 8)   \
++                            |(GTEST_REVISION<< 0)   \
+                             )   //!< google test version
+ #endif
+ 
+diff --git a/include/iutest_ver.hpp b/include/iutest_ver.hpp
+index 8db9f48..082e4da 100644
+--- a/include/iutest_ver.hpp
++++ b/include/iutest_ver.hpp
+@@ -20,9 +20,11 @@
+ #define IUTEST_VER          0x01160007u //!< iutest version 1.16.0.7
+ #define IUTEST_MAJORVER     0x01u       //!< Major Version
+ #define IUTEST_MINORVER     0x16u       //!< Minor Version
+-#define IUTEST_BUILD        0x00u       //!< Build
++#define IUTEST_MICROVER     0x00u       //!< Micro Version
+ #define IUTEST_REVISION     0x07u       //!< Revision
+ 
++#define IUTEST_BUILD        IUTEST_MICROVER //!< @deprecated
++
+ /**
+  * @mainpage
+  * @sa  @b  ProjectHome \n
+@@ -118,6 +120,7 @@
+  <ul>
+   <li>v1.16.1.0
+     <ul>
++      <li>IUTEST_BUILD を非推奨に変更し、IUTEST_MICROVER を追加</li>
+       <li>XML_OUTPUT_FILE 環境変数に対応</li>
+     </ul>
+   </li>
+diff --git a/test/basic_tests.cpp b/test/basic_tests.cpp
+index b2abb04..3ef3ba2 100644
+--- a/test/basic_tests.cpp
++++ b/test/basic_tests.cpp
+@@ -6,7 +6,7 @@
+  *
+  * @author      t.shirayanagi
+  * @par         copyright
+- * Copyright (C) 2012-2016, Takazumi Shirayanagi\n
++ * Copyright (C) 2012-2017, Takazumi Shirayanagi\n
+  * This software is released under the new BSD License,
+  * see LICENSE
+ */
+@@ -20,7 +20,7 @@
+ #if !defined(IUTEST_USE_GTEST)
+ IUTEST(VersionTest, Check)
+ {
+-    unsigned long v = (IUTEST_MAJORVER << 24) | (IUTEST_MINORVER << 16) | (IUTEST_BUILD << 8) | IUTEST_REVISION;
++    unsigned long v = (IUTEST_MAJORVER << 24) | (IUTEST_MINORVER << 16) | (IUTEST_MICROVER << 8) | IUTEST_REVISION;
+     IUTEST_ASSERT_EQ( IUTEST_VER, v );
+ }
+ #endif

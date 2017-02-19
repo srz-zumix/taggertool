@@ -183,7 +183,7 @@ def parse_command_line():
     )
     parser.add_argument(
         '--extension',
-        default='(c|h|cpp|hpp|cxx|hxx|cc|hh|ipp|cu|m|mm|cs)$',
+        default='(c|h|cpp|hpp|cxx|hxx|cc|hh|ipp|cu|m|mm|cs|diff|patch)$',
         help='file extension matcher'
     )
     parser.add_argument(
@@ -702,10 +702,10 @@ def check(filepath):
     print('check: {0}'.format(filename))
     filesize = f.getsize()
     lang = f.getlanguage()
-    langkeywords = f.getkeywords()
     line_count = 1
     line = f.readline()
     while line:
+        langkeywords = f.getkeywords()
         text = line.strip()
         if len(text) > 0:
             if ischeckline(lang, line):

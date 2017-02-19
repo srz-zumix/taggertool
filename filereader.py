@@ -16,6 +16,7 @@ class FileReader(object):
         self.file = None
         self.keywords = []
         self.pglang = None
+        self.rawline = None
 
     def open(self, filepath, encoding=None):
         if self.is_open():
@@ -36,13 +37,17 @@ class FileReader(object):
 
     def __readline(self):
         try:
-            return self.file.readline()
+            self.rawline = self.file.readline()
+            return self.rawline
         except:
             print("Unexpected error:", sys.exc_info()[0])
             return None
 
     def readline(self):
         return self.__readline()
+
+    def getrawline(self):
+        return self.rawline
 
     def getsize(self):
         return os.path.getsize(self.file.name)
@@ -60,9 +65,9 @@ class FileReader(object):
 class SourceCodeReader(FileReader):
     block_comment = False
 
-    def __init__(self, r_block_comment_begin, r_block_comment_end, line_comment):
-        self.r_block_comment_begin = r_block_comment_begin
-        self.r_block_comment_end = r_block_comment_end
+    def __init__(self, block_comment_begin, block_comment_end, line_comment):
+        self.r_block_comment_begin = re.compile('(.*)' + block_comment_begin + '.*')
+        self.r_block_comment_end = re.compile('.*' + block_comment_end + '(.*)')
         self.line_comment = line_comment
         super(SourceCodeReader, self).__init__()
 
@@ -93,16 +98,61 @@ class SourceCodeReader(FileReader):
 
 class CppFileReader(SourceCodeReader):
     def __init__(self):
-        r_block_comment_begin = re.compile('(.*)/\*.*')
-        r_block_comment_end = re.compile('.*\*/(.*)')
+        block_comment_begin = '/\*'
+        block_comment_end = '\*/'
         line_comment = '//'
-        super(CppFileReader, self).__init__(r_block_comment_begin, r_block_comment_end, line_comment)
+        super(CppFileReader, self).__init__(block_comment_begin, block_comment_end, line_comment)
+
+
+class CSharpFileReader(SourceCodeReader):
+    def __init__(self):
+        block_comment_begin = '/\*'
+        block_comment_end = '\*/'
+        line_comment = '//'
+        super(CppFileReader, self).__init__(block_comment_begin, block_comment_end, line_comment)
+
+
+class DiffFileReader(FileReader):
+    def __init__(self):
+        super(DiffFileReader, self).__init__()
+
+    def open(self, filepath, encoding=None):
+        if self.is_open():
+            self.close()
+        if encoding:
+            self.file = codecs.open(filepath, 'r', encoding=encoding)
+        else:
+            self.file = codecs.open(filepath, 'r')
+
+    def update_keywords(self, filename):
+        self.keywords = keywords.getkeywords(filename)
+        self.pglang = keywords.getlanguage(filename)
+
+    def readline(self):
+        text = super(DiffFileReader, self).readline()
+        if not text:
+            return text
+        if text.startswith('+'):
+            if not text.startswith('+++ '):
+                return text[1:]
+        if text.startswith('diff '):
+            filename = text.split()[-1]
+            self.update_keywords(filename)
+        # not EOF
+        return ' '
 
 
 def CreateFileReader(filepath):
     pglang = keywords.getlanguage(filepath)
-    if pglang == 'c++':
+    if pglang == 'c++' or pglang == 'obj-c':
         return CppFileReader()
+    if pglang == 'c#':
+        return CSharpFileReader()
+    else:
+        root, ext = os.path.splitext(filepath)
+        if ext in ['.diff', '.patch']:
+            return DiffFileReader()
+
     return FileReader()
 
 

@@ -1,3 +1,6 @@
+﻿#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
 
 commonwords =  [ 'alpha'
@@ -782,8 +785,7 @@ csharpkeywords_all = None
 objckeywords_all = None
 defaultkeywords_all = None
 
-def getlanguage(file):
-    root, ext = os.path.splitext(file)
+def getlanguage_from_ext(ext):
     if ext in cppext:
         return 'c++'
     elif ext in csext:
@@ -793,20 +795,25 @@ def getlanguage(file):
     return None
 
 
-def getkeywords_from_ext(ext):
+def getlanguage(file):
+    root, ext = os.path.splitext(file)
+    return getlanguage_from_ext(ext)
+
+
+def getkeywords_from_language(lang):
     global cppkeywords_all
     global csharpkeywords_all
     global objckeywords_all
     global defaultkeywords_all
-    if ext in cppext:
+    if lang == 'c++':
         if cppkeywords_all is None:
             cppkeywords_all = make_cppkeywords()
         return cppkeywords_all
-    elif ext in csext:
+    elif lang == 'c#':
         if csharpkeywords_all is None:
             csharpkeywords_all = make_csharpkeywords()
         return csharpkeywords_all
-    elif ext in objcext:
+    elif lang == 'obj-c':
         if objckeywords_all is None:
             objckeywords_all = make_objckeywords()
         return objckeywords_all
@@ -816,6 +823,9 @@ def getkeywords_from_ext(ext):
     return defaultkeywords_all
 
 
+def getkeywords_from_ext(ext):
+    return getkeywords_from_language(getlanguage_from_ext(ext))
+
+
 def getkeywords(file):
-    root, ext = os.path.splitext(file)
-    return getkeywords_from_ext(ext)
+    return getkeywords_from_language(getlanguage(file))
