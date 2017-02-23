@@ -8,6 +8,7 @@ import codecs
 import requests
 import unicodedata
 
+import keywords
 import filereader
 
 from dejizo import Dejizo
@@ -157,9 +158,10 @@ def parse_command_line():
         help='translation cache directory'
     )
     parser.add_argument(
-        '--diff',
-        action='store_true',
-        help='diff file check'
+        '-x',
+        '--language',
+        choices=keywords.supported_languages,
+        help='select language'
     )
     parser.add_argument(
         '--list-all',
@@ -196,6 +198,12 @@ def parse_command_line():
         metavar='FILE/DIR',
         nargs='+',
         help='source code file/dir'
+    )
+    parser.add_argument(
+        '-',
+        dest='stdin',
+        action='store_true',
+        help='source code from stdin'
     )
     options = parser.parse_args()
     return options, parser
@@ -695,7 +703,7 @@ def check(filepath):
     encoding = options.encoding
     if encoding is None:
         encoding = detect_encoding(filepath)
-    f = filereader.OpenFile(filepath, encoding=encoding)
+    f = filereader.OpenFile(filepath, encoding=encoding, language=options.language)
     print('check: {0}'.format(filename))
     filesize = f.getsize()
     lang = f.getlanguage()

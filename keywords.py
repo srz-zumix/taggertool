@@ -785,13 +785,15 @@ csharpkeywords_all = None
 objckeywords_all = None
 defaultkeywords_all = None
 
+supported_languages = [ 'c++', 'c#', 'objc' ]
+
 def getlanguage_from_ext(ext):
     if ext in cppext:
         return 'c++'
     elif ext in csext:
         return 'c#'
     elif ext in objcext:
-        return 'obj-c'
+        return 'objc'
     return None
 
 

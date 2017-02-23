@@ -14,7 +14,7 @@ class FileReader(object):
 
     def __init__(self):
         self.file = None
-        self.keywords = []
+        self.keywords = None
         self.pglang = None
         self.rawline = None
 
@@ -25,8 +25,10 @@ class FileReader(object):
             self.file = codecs.open(filepath, 'r', encoding=encoding)
         else:
             self.file = codecs.open(filepath, 'r')
-        self.keywords = keywords.getkeywords(filepath)
-        self.pglang = keywords.getlanguage(filepath)
+        if self.pglang is None:
+            self.pglang = keywords.getlanguage(filepath)
+        if self.keywords is None:
+            self.keywords = keywords.getkeywords_from_language(self.pglang)
 
     def close(self):
         if self.file:
@@ -51,6 +53,9 @@ class FileReader(object):
 
     def getsize(self):
         return os.path.getsize(self.file.name)
+
+    def setlanguage(self, lang):
+        self.pglang = lang
 
     def getlanguage(self):
         return self.pglang
@@ -102,6 +107,13 @@ class CppFileReader(SourceCodeReader):
         block_comment_end = '\*/'
         line_comment = '//'
         super(CppFileReader, self).__init__(block_comment_begin, block_comment_end, line_comment)
+        self.pglang = 'c++'
+
+
+class ObjCFileReader(CppFileReader):
+    def __init__(self):
+        super(ObjCFileReader, self).__init__()
+        self.pglang = 'objc'
 
 
 class CSharpFileReader(SourceCodeReader):
@@ -110,6 +122,7 @@ class CSharpFileReader(SourceCodeReader):
         block_comment_end = '\*/'
         line_comment = '//'
         super(CppFileReader, self).__init__(block_comment_begin, block_comment_end, line_comment)
+        self.pglang = 'c#'
 
 
 class DiffFileReader(FileReader):
@@ -142,11 +155,14 @@ class DiffFileReader(FileReader):
         return ' '
 
 
-def CreateFileReader(filepath):
-    pglang = keywords.getlanguage(filepath)
-    if pglang == 'c++' or pglang == 'obj-c':
+def CreateFileReader(filepath, language=None):
+    if language is None:
+        language = keywords.getlanguage(filepath)
+    if language == 'c++':
         return CppFileReader()
-    if pglang == 'c#':
+    elif language == 'objc':
+        return ObjCFileReader()
+    elif language == 'c#':
         return CSharpFileReader()
     else:
         root, ext = os.path.splitext(filepath)
@@ -156,8 +172,8 @@ def CreateFileReader(filepath):
     return FileReader()
 
 
-def OpenFile(filepath, encoding=None):
-    f = CreateFileReader(filepath)
+def OpenFile(filepath, encoding=None, language=None):
+    f = CreateFileReader(filepath, language)
     if f:
         f.open(filepath, encoding)
     return f
