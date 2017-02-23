@@ -692,9 +692,6 @@ def ischeckline(lang, line):
 def check(filepath):
     global langkeywords
     filename = os.path.basename(filepath)
-    if not re.match(options.extension, os.path.splitext(filename)[1].strip('.')):
-        print('skip: {0}: not match extension [{1}]'.format(filename, options.extension))
-        return
     encoding = options.encoding
     if encoding is None:
         encoding = detect_encoding(filepath)
@@ -750,7 +747,10 @@ def checkdir(dir):
                 checkdir(d)
                 print("<<<< Leaving  directory {0}".format(basename))
         else:
-            checkfile(d)
+            if not re.match(options.extension, os.path.splitext(d)[1].strip('.')):
+                print('skip: {0}: not match extension [{1}]'.format(d, options.extension))
+            else:
+                checkfile(d)
 
 
 r_geneword = re.compile(r'^[a-zA-Z][a-z]+$')
