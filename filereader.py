@@ -121,7 +121,7 @@ class CSharpFileReader(SourceCodeReader):
         block_comment_begin = '/\*'
         block_comment_end = '\*/'
         line_comment = '//'
-        super(CppFileReader, self).__init__(block_comment_begin, block_comment_end, line_comment)
+        super(CSharpFileReader, self).__init__(block_comment_begin, block_comment_end, line_comment)
         self.pglang = 'c#'
 
 
