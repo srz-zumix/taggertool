@@ -196,7 +196,7 @@ def parse_command_line():
     parser.add_argument(
         'file',
         metavar='FILE/DIR',
-        nargs='+',
+        nargs='*',
         help='source code file/dir'
     )
     parser.add_argument(
@@ -447,8 +447,9 @@ def is_suspicion_dejizo(word):
 def is_whitelist(word):
     if word in whitelist:
         return True
-    if word in langkeywords:
-        return True
+    if langkeywords:
+        if word in langkeywords:
+            return True
     # 辞書にあったら除外
     if word in gene:
         return True
@@ -630,6 +631,7 @@ def text_transform(text):
 def checktagger(filepath, text, line):
     global words
     global checked_words
+    detected_words = []
     tags_plain = tagger.TagText(text)
     tags = treetaggerwrapper.make_tags(tags_plain)
     for tag in tags:
@@ -640,25 +642,32 @@ def checktagger(filepath, text, line):
             location = Location(filepath, line)
             if words.has_key(word):
                 words[word].append(location)
+                detected_words.append({word: location})
             elif is_suspicion(word):
                 words[word] = [location]
+                detected_words.append({word: location})
             else:
                 checked_words.append(word)
+    return detected_words
 
 
 def checksplit(filepath, text, line):
     global words
     global checked_words
+    detected_words = []
     for tag in text.split():
         word = tag.lower()
         if not word in checked_words:
             location = Location(filepath, line)
             if words.has_key(word):
                 words[word].append(location)
+                detected_words.append({word: location})
             elif is_suspicion(word):
                 words[word] = [location]
+                detected_words.append({word: location})
             else:
                 checked_words.append(word)
+    return detected_words
 
 
 def detect_encoding(path):
@@ -697,30 +706,32 @@ def ischeckline(lang, line):
     return False
 
 
-def check(filepath):
+def check(f, report_in_line):
     global langkeywords
-    filename = os.path.basename(filepath)
-    encoding = options.encoding
-    if encoding is None:
-        encoding = detect_encoding(filepath)
-    f = filereader.OpenFile(filepath, encoding=encoding, language=options.language)
-    print('check: {0}'.format(filename))
+    filepath = f.getpath()
     filesize = f.getsize()
     lang = f.getlanguage()
     line_count = 1
     line = f.readline()
     while line:
+        rstrip_line = line.rstrip()
+        if report_in_line:
+            print(f.getrawline().rstrip())
         langkeywords = f.getkeywords()
         text = line.strip()
         if len(text) > 0:
             if ischeckline(lang, line):
                 if tagger is None:
-                    checksplit(filepath, text_transform(text), line_count)
+                    detected_words = checksplit(filepath, text_transform(text), line_count)
                 else:
-                    checktagger(filepath, text_transform(text), line_count)
+                    detected_words = checktagger(filepath, text_transform(text), line_count)
+                if report_in_line:
+                    for d in detected_words:
+                        for word in d.keys():
+                            print("warning: \"{0}\": is ok ??".format(word))
         line_count += 1
         line = f.readline()
-        if options.progress:
+        if options.progress and not print_line:
             pos = f.tell()
             sys.stdout.write('{0:.2f}%'.format(pos*100.0/filesize)+ '\r')
     f.close()
@@ -741,8 +752,14 @@ def printresult():
         print("Total number detected: {0}".format(len(words)))
 
 
-def checkfile(f):
-    check(f)
+def checkfile(filepath):
+    filename = os.path.basename(filepath)
+    encoding = options.encoding
+    if encoding is None:
+        encoding = detect_encoding(filepath)
+    f = filereader.OpenFile(filepath, encoding=encoding, language=options.language)
+    print('check: {0}'.format(filename))
+    check(f, False)
 
 
 def checkdir(dir):
@@ -827,10 +844,9 @@ def setup():
         Glosbe.set_safe_mode(False)
 
 
-def main():
-    global options
-    options, parser = parse_command_line()
-    setup()
+def checkfilelist():
+    if not options.file:
+        return
     for f in options.file:
         if os.path.isdir(f):
             checkdir(f)
@@ -839,6 +855,26 @@ def main():
     print('==== begin ====')
     printresult()
     print('====  end  ====')
+
+
+def checkstdin():
+    encoding = options.encoding
+    f = filereader.OpenStdin(encoding=encoding, language=options.language)
+    check(f, True)
+
+
+def main():
+    global options
+    options, parser = parse_command_line()
+    setup()
+    if options.stdin:
+        checkstdin()
+    else:
+        if options.file is None or len(options.file) <= 0:
+            parser.print_help()
+        else:
+            checkfilelist()
+
 
 if __name__ == '__main__':
     main()

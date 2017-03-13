@@ -731,7 +731,7 @@ csharpwords = [  'int'
 cppext = [ '.c', '.cpp', '.cxx', '.cc', '.h', '.hpp', '.hxx', '.ipp' ]
 csext = [ '.cs' ]
 objcext = [ '.mm', '.m' ]
-
+diffext = [ '.diff', '.patch' ]
 
 def appendix(d):
     for word in d:
@@ -785,7 +785,7 @@ csharpkeywords_all = None
 objckeywords_all = None
 defaultkeywords_all = None
 
-supported_languages = [ 'c++', 'c#', 'objc' ]
+supported_languages = [ 'c++', 'c#', 'objc', 'diff' ]
 
 def getlanguage_from_ext(ext):
     if ext in cppext:
@@ -794,10 +794,14 @@ def getlanguage_from_ext(ext):
         return 'c#'
     elif ext in objcext:
         return 'objc'
+    elif ext in diffext:
+        return 'diff'
     return None
 
 
 def getlanguage(file):
+    if file is None:
+        return None
     root, ext = os.path.splitext(file)
     return getlanguage_from_ext(ext)
 

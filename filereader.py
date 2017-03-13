@@ -9,6 +9,8 @@ import unicodedata
 
 import keywords
 
+from StringIO import StringIO
+
 class FileReader(object):
     Keywords = []
 
@@ -29,6 +31,9 @@ class FileReader(object):
             self.pglang = keywords.getlanguage(filepath)
         if self.keywords is None:
             self.keywords = keywords.getkeywords_from_language(self.pglang)
+
+    def setfile(self, f):
+        self.file = f
 
     def close(self):
         if self.file:
@@ -51,8 +56,22 @@ class FileReader(object):
     def getrawline(self):
         return self.rawline
 
+    def getpath(self):
+        try:
+            return self.file.name
+        except:
+            return None
+
     def getsize(self):
-        return os.path.getsize(self.file.name)
+        name = self.getpath()
+        if name:
+            return os.path.getsize(name)
+        else:
+            pos = self.file.tell()
+            self.file.seek(0, os.SEEK_END)
+            size = self.file.tell()
+            self.file.seek(pos, os.SEEK_SET)
+            return size
 
     def setlanguage(self, lang):
         self.pglang = lang
@@ -164,10 +183,8 @@ def CreateFileReader(filepath, language=None):
         return ObjCFileReader()
     elif language == 'c#':
         return CSharpFileReader()
-    else:
-        root, ext = os.path.splitext(filepath)
-        if ext in ['.diff', '.patch']:
-            return DiffFileReader()
+    elif language == 'diff':
+        return DiffFileReader()
 
     return FileReader()
 
@@ -178,3 +195,14 @@ def OpenFile(filepath, encoding=None, language=None):
         f.open(filepath, encoding)
     return f
 
+
+def OpenStdin(encoding=None, language=None):
+    f = CreateFileReader(None, language)
+    if f:
+        io = StringIO()
+        for line in sys.stdin.readlines():
+            io.write(line)
+        io.seek(0, os.SEEK_SET)
+        f.setfile(io)
+        return f
+    return None
