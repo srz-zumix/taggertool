@@ -1787,3 +1787,16 @@ lint
 author
 this
 new
+fence
+classify
+weak
+additive
+fetch
+relaxed
+consume
+subsection
+typical
+synchronize
+scratch
+addend
+classification
