@@ -37,9 +37,15 @@ default_encoding_change_count = 0
 exclude_dir = [ '.git', '.svn', '.vs', 'temp', 'tmp' ]
 
 class Location:
+    current_path = None
+
     def __init__(self, file, line):
         self.file = file
         self.line = line
+        if Location.current_path:
+            self.relpath = os.path.relpath(file, Location.current_path)
+        else:
+            self.relpath = os.path.basename(file)
 
 
 class Cache:
@@ -192,6 +198,11 @@ def parse_command_line():
         '--ignore-noexists',
         action='store_true',
         help='ignore option file not exists'
+    )
+    parser.add_argument(
+        '--relpath',
+        action='store_true',
+        help='print relative path'
     )
     parser.add_argument(
         'file',
@@ -736,19 +747,25 @@ def check(f, report_in_line):
             sys.stdout.write('{0:.2f}%'.format(pos*100.0/filesize)+ '\r')
     f.close()
 
+def get_print_path(location):
+    if options.relpath:
+        return location.relpath
+    else:
+        return location.file
+
 
 def printresult():
     if options.list_all:
         for k,v in sorted(words.items(), key=lambda x: len(x[1])):
             for location in v:
-                print("{0}({1}): warning: \"{2}\": is ok ??".format(location.file, location.line, k))
+                print("{0}({1}): warning: \"{2}\": is ok ??".format(get_print_path(location), location.line, k))
     else:
         for k,v in sorted(words.items(), key=lambda x: x[0]):
             location = v[0]
             if len(v) > 1:
-                print("{0}({1}): warning: \"{2}\": is ok ?? ({3})".format(location.file, location.line, k, len(v)))
+                print("{0}({1}): warning: \"{2}\": is ok ?? ({3})".format(get_print_path(location), location.line, k, len(v)))
             else:
-                print("{0}({1}): warning: \"{2}\": is ok ??".format(location.file, location.line, k))
+                print("{0}({1}): warning: \"{2}\": is ok ??".format(get_print_path(location), location.line, k))
         print("Total number detected: {0}".format(len(words)))
 
 
@@ -763,6 +780,8 @@ def checkfile(filepath):
 
 
 def checkdir(dir):
+    prev = Location.current_path
+    Location.current_path = dir
     for d in os.listdir(dir):
         d = os.path.join(dir, d)
         if os.path.isdir(d):
@@ -776,6 +795,7 @@ def checkdir(dir):
                 print('skip: {0}: not match extension [{1}]'.format(d, options.extension))
             else:
                 checkfile(d)
+    Location.current_path = prev
 
 
 r_geneword = re.compile(r'^[a-zA-Z][a-z]+$')
