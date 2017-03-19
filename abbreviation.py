@@ -42,10 +42,13 @@ class Location:
     def __init__(self, file, line):
         self.file = file
         self.line = line
-        if Location.current_path:
-            self.relpath = os.path.relpath(file, Location.current_path)
+        if file:
+            if Location.current_path:
+                self.relpath = os.path.relpath(file, Location.current_path)
+            else:
+                self.relpath = os.path.basename(file)
         else:
-            self.relpath = os.path.basename(file)
+            self.relpath = None
 
 
 class Cache:
