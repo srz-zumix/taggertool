@@ -2241,6 +2241,7 @@ fusion
 metafunction
 promote
 modulus
+arr
 complement
 covariance
 variate
@@ -2266,6 +2267,7 @@ compensation
 optimize
 coherent
 accumulate
+rng
 covariate
 specific
 bag
@@ -2334,6 +2336,7 @@ adaptable
 steady
 monotonic
 microseconds
+den
 evenly
 divisible
 interprocess
