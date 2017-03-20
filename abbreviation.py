@@ -288,6 +288,9 @@ def check_abbreviation_glosbe(word, d):
         if text.startswith('abbreviation for'):
             if not text.startswith('abbreviation for ' + word + ' '):
                 return -1
+        if text.startswith('shortened form of'):
+            if not text.startswith('shortened form of ' + word + ' '):
+                return -1
         # ゴミ？
         if 'dust' == text:
             return -1
