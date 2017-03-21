@@ -748,7 +748,7 @@ def check(f, report_in_line):
                             print("warning: \"{0}\": is ok ??".format(word))
         line_count += 1
         line = f.readline()
-        if options.progress and not print_line:
+        if options.progress and not report_in_line:
             pos = f.tell()
             sys.stdout.write('{0:.2f}%'.format(pos*100.0/filesize)+ '\r')
     f.close()
