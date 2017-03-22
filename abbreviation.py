@@ -105,6 +105,16 @@ words = {}
 checked_words = []
 
 
+def add_abbreviation(dict, word):
+    if dict in service_cache:
+        service_cache[dict].add_abbreviation(word)
+
+
+def add_cache(dict, word):
+    if dict in service_cache:
+        service_cache[dict].add(word)
+
+
 def parse_command_line():
     parser = ArgumentParser()
     parser.add_argument(
@@ -276,25 +286,31 @@ def check_abbreviation_glosbe(word, d):
             text = m.group(2).strip()
             for tag in m.group(1).split(','):
                 if tag in ['online gaming', 'internet', 'programing']:
-                    return 1
+                    return 10
                 elif tag in ['informal', 'colloquial abbreviation']:
                     desc = m.group(2).lower().strip()
                     if re.match('^a\s' + word + '\w', desc):
-                        return -1
+                        return -5
         # XXX の略語って意味はダメ
         if text.startswith('abbreviation of'):
             if not text.startswith('abbreviation of ' + word + ' '):
-                return -1
+                return -5
         if text.startswith('abbreviation for'):
             if not text.startswith('abbreviation for ' + word + ' '):
-                return -1
+                return -5
         if text.startswith('shortened form of'):
             if not text.startswith('shortened form of ' + word + ' '):
-                return -1
+                return -5
+        if text.startswith('clipped form of'):
+            if not text.startswith('clipped form of ' + word + ' '):
+                return -5
+        # 一単語のみで前方一致した場合は略語と判定
+        #if text.startswith(word) and len(text.split()) == 1:
+        #    return -1
         # ゴミ？
         if 'dust' == text:
             return -1
-    return 0
+    return 1
 
 
 def check_abbreviation_glosbe_tuc(word, t):
@@ -333,31 +349,41 @@ def is_suspicion_glosbe_impl(word):
             has_dict = False
             has_optional_abbreviation = False
             has_ja = False
+            # 辞書ごとのリストを作成する
+            master_dicts = []
+            optional_dicts = []
             for t in tuc:
                 if has_glosbe_computing_meaings(t):
-                    service_cache['glosbe'].add(word)
+                    add_cache('glosbe', word)
                     return False
                 if has_glosbe_ja_meaings(t):
                     has_ja = True
                 # 1,2736 の辞書だけ使う
                 if any(x in [1, 2736] for x in t['authors']):
-                    rs = check_abbreviation_glosbe_tuc(word, t)
-                    if rs < 0:
-                        service_cache['glosbe'].add_abbreviation(word)
-                        return True
-                    elif rs > 0:
-                        # 許可された単語は即座に非略語を返す
-                        return False
-                    has_dict = True
+                    master_dicts.append(t)
                 # それ以外の辞書のうち略語判定のみに使用
                 elif any(x in [91945] for x in t['authors']):
-                    if check_abbreviation_glosbe_tuc(word, t) < 0:
-                        has_optional_abbreviation = True
+                    optional_dicts.append(t)
+
+            eval = 0
+            for t in master_dicts:
+                rs = check_abbreviation_glosbe_tuc(word, t)
+                eval += rs
+                if rs >= 10:
+                    # 許可された単語は即座に非略語を返す
+                    return False
+            if eval < 0:
+                add_abbreviation('glosbe', word)
+                return True
+            has_dict = True
+            for t in optional_dicts:
+                if check_abbreviation_glosbe_tuc(word, t) < 0:
+                    has_optional_abbreviation = True
             if (not has_ja) and has_optional_abbreviation:
-                service_cache['glosbe'].add_abbreviation(word)
+                add_abbreviation('glosbe', word)
                 return True
             if has_dict:
-                service_cache['glosbe'].add(word)
+                add_cache('glosbe', word)
                 return False
     except requests.HTTPError as e:
         print("Http error:", e.message)
@@ -430,7 +456,7 @@ def is_suspicion_dejizo_impl(word, dict):
                 if Dejizo.is_getable(word, dict):
                     try:
                         if is_abbreviation_dejizo_impl(word, d, dict):
-                            service_cache['dejizo'].add_abbreviation(word)
+                            add_abbreviation('dejizo', word)
                             return -1
                         else:
                             return 0
@@ -457,7 +483,7 @@ def is_suspicion_dejizo(word):
     if ret > 0 and ret2 > 0:
         return True
     # どちらかの辞書にあったらキャッシュに登録
-    service_cache['dejizo'].add(word)
+    add_cache('dejizo', word)
     return False
 
 
