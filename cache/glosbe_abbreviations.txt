@@ -1,14 +1,10 @@
 ver
 str
 amp
-diff
 mag
 exam
 doc
 lang
-sub
-paren
-tab
 super
 quad
 msg
@@ -17,3 +13,4 @@ rec
 prob
 tic
 sig
+paren
