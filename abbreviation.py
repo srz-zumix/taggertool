@@ -177,6 +177,11 @@ def parse_command_line():
         help='translation cache directory'
     )
     parser.add_argument(
+        '--disable-keywords',
+        action='store_true',
+        help='disable general and language keywords'
+    )
+    parser.add_argument(
         '-x',
         '--language',
         choices=keywords.supported_languages,
@@ -285,11 +290,13 @@ def check_abbreviation_glosbe(word, d):
         if m:
             text = m.group(2).strip()
             for tag in m.group(1).split(','):
-                if tag in ['online gaming', 'internet', 'programing']:
+                if tag in ['online gaming', 'internet']:
                     return 10
+                if tag in ['programing', 'computing']:
+                    return 20
                 elif tag in ['informal', 'colloquial abbreviation']:
                     desc = m.group(2).lower().strip()
-                    if re.match('^a\s' + word + '\w', desc):
+                    if re.match('^(a\s|)' + word + '\w', desc):
                         return -5
         # XXX の略語って意味はダメ
         if text.startswith('abbreviation of'):
@@ -297,6 +304,12 @@ def check_abbreviation_glosbe(word, d):
                 return -5
         if text.startswith('abbreviation for'):
             if not text.startswith('abbreviation for ' + word + ' '):
+                return -5
+        if text.startswith('an abbreviation for'):
+            if not text.startswith('an abbreviation for ' + word + ' '):
+                return -5
+        if text.startswith('short for'):
+            if not text.startswith('short for ' + word + ' '):
                 return -5
         if text.startswith('shortened form of'):
             if not text.startswith('shortened form of ' + word + ' '):
@@ -322,20 +335,19 @@ def check_abbreviation_glosbe_tuc(word, t):
     return 0
 
 
+def get_abbreviation_glosbe_score(word, tuc):
+    score = 0
+    for t in tuc:
+        rs = check_abbreviation_glosbe_tuc(word, t)
+        score += rs
+    return score
+
+
 def has_glosbe_ja_meaings(t):
     if 'meanings' in t:
         for meaning in t['meanings']:
             if meaning['language'] == Glosbe.JA:
                 return True
-    return False
-
-
-def has_glosbe_computing_meaings(t):
-    if 'meanings' in t:
-        for meaning in t['meanings']:
-            if meaning['language'] == Glosbe.EN:
-                if '(computing)' in meaning['text']:
-                    return True
     return False
 
 
@@ -346,16 +358,12 @@ def is_suspicion_glosbe_impl(word):
             tuc = r['tuc']
             if len(tuc) == 0:
                 return True
-            has_dict = False
-            has_optional_abbreviation = False
+
             has_ja = False
             # 辞書ごとのリストを作成する
             master_dicts = []
             optional_dicts = []
             for t in tuc:
-                if has_glosbe_computing_meaings(t):
-                    add_cache('glosbe', word)
-                    return False
                 if has_glosbe_ja_meaings(t):
                     has_ja = True
                 # 1,2736 の辞書だけ使う
@@ -365,24 +373,17 @@ def is_suspicion_glosbe_impl(word):
                 elif any(x in [91945] for x in t['authors']):
                     optional_dicts.append(t)
 
-            eval = 0
-            for t in master_dicts:
-                rs = check_abbreviation_glosbe_tuc(word, t)
-                eval += rs
-                if rs >= 10:
-                    # 許可された単語は即座に非略語を返す
-                    return False
-            if eval < 0:
+            score = get_abbreviation_glosbe_score(word, master_dicts)
+            if score < 0:
                 add_abbreviation('glosbe', word)
                 return True
-            has_dict = True
-            for t in optional_dicts:
-                if check_abbreviation_glosbe_tuc(word, t) < 0:
-                    has_optional_abbreviation = True
-            if (not has_ja) and has_optional_abbreviation:
-                add_abbreviation('glosbe', word)
-                return True
-            if has_dict:
+
+            if not has_ja and score < 5:
+                for t in optional_dicts:
+                    if check_abbreviation_glosbe_tuc(word, t) < 0:
+                        add_abbreviation('glosbe', word)
+                        return True
+            if len(master_dicts) > 0:
                 add_cache('glosbe', word)
                 return False
     except requests.HTTPError as e:
@@ -490,7 +491,7 @@ def is_suspicion_dejizo(word):
 def is_whitelist(word):
     if word in whitelist:
         return True
-    if langkeywords:
+    if langkeywords and not options.disable_keywords:
         if word in langkeywords:
             return True
     # 辞書にあったら除外
@@ -523,7 +524,7 @@ def is_suspicion_past(word, length):
 
 r_past_e = re.compile('.*[a-z]{2,2}en$')
 def is_suspicion_past_participle(word, length):
-    if length > 2 and word.endswith('en'):
+    if length > 3+2 and word.endswith('en'):
         if is_whitelist(word[:-2]):
             return False
         if is_whitelist(word[:-1]):
