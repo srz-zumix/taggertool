@@ -81,7 +81,7 @@ class Glosbe:
         r = requests.get(Glosbe.api_url, params=payload)
         r.raise_for_status()
         if Glosbe.safe_mode:
-            sleep(randint(50, 300)/100.0)
+            sleep(randint(50, 500)/100.0)
         return r.json()
 
 
