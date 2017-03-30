@@ -7,6 +7,7 @@ import re
 import codecs
 import requests
 import unicodedata
+import argparse
 
 import keywords
 import filereader
@@ -234,6 +235,11 @@ def parse_command_line():
         action='store_true',
         help='source code from stdin'
     )
+    parser.add_argument(
+        '--debug',
+        action='store_true',
+        help=argparse.SUPPRESS
+    )
     options = parser.parse_args()
     return options, parser
 
@@ -391,6 +397,8 @@ def is_suspicion_glosbe_impl(word):
         if e.response.status_code == 429:
             print("request count: ", Glosbe.count)
             options.glosbe = False
+            if options.debug:
+                sys.exit(1)
         else:
             raise
     except:
