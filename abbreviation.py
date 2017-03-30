@@ -230,6 +230,10 @@ def parse_command_line():
         help='source code file/dir'
     )
     parser.add_argument(
+        '--word',
+        help='dircet check words'
+    )
+    parser.add_argument(
         '-',
         dest='stdin',
         action='store_true',
@@ -924,11 +928,19 @@ def checkstdin():
     check(f, True)
 
 
+def checkdirect(text):
+    encoding = options.encoding
+    f = filereader.OpenText(text, encoding=encoding, language=options.language)
+    check(f, True)
+
+
 def main():
     global options
     options, parser = parse_command_line()
     setup()
-    if options.stdin:
+    if options.word:
+        checkdirect(options.word)
+    elif options.stdin:
         checkstdin()
     else:
         if options.file is None or len(options.file) <= 0:

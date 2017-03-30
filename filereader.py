@@ -206,3 +206,14 @@ def OpenStdin(encoding=None, language=None):
         f.setfile(io)
         return f
     return None
+
+
+def OpenText(text, encoding=None, language=None):
+    f = CreateFileReader(None, language)
+    if f:
+        io = StringIO()
+        io.write(text)
+        io.seek(0, os.SEEK_SET)
+        f.setfile(io)
+        return f
+    return None
