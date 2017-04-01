@@ -17,7 +17,7 @@ class Glosbe:
     Japanese = JA
 
     count = 0
-    safe_mode = True
+    safe_mode = False
 
     api_url = 'https://glosbe.com/gapi/translate'
 
@@ -81,7 +81,13 @@ class Glosbe:
         r = requests.get(Glosbe.api_url, params=payload)
         r.raise_for_status()
         if Glosbe.safe_mode:
-            sleep(randint(50, 500)/100.0)
+            # 800 リクエスト出したあたりで ban される
+            #sleep(randint(50, 500)/100.0)
+            limit_count = 800 - 4
+            if Glosbe.count % (limit_count) == 0:
+                # 1h 待つとセーフ？
+                sleep(65*60)
+            pass
         return r.json()
 
 

@@ -245,9 +245,15 @@ def parse_command_line():
         help='print percent progress'
     )
     parser.add_argument(
+        '--safe-mode',
+        action='store_true',
+        help='api request limit safe mode(glosbe)'
+    )
+    parser.add_argument(
         '--no-request-limit',
         action='store_true',
-        help='no api request limit'
+        help=argparse.SUPPRESS
+#        help='no api request limit'
     )
     parser.add_argument(
         '--encoding',
@@ -966,6 +972,8 @@ def setup():
         for f in options.load_cache:
             whitelist.extend(make_wordlist(Cache.get_gene_filename(options.cache_dir, f)))
             abbreviations.extend(make_wordlist(Cache.get_abbreviation_filename(options.cache_dir, f)))
+    if options.safe_mode:
+        Glosbe.set_safe_mode(True)
     if options.no_request_limit:
         Glosbe.set_safe_mode(False)
 
