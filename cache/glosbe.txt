@@ -10,7 +10,6 @@ message
 port
 compiler
 variadic
-max
 platform
 family
 lean
@@ -25,12 +24,10 @@ apple
 target
 conditionals
 ios
-mac
 sun
 android
 native
 client
-google
 arm
 level
 has
@@ -65,7 +62,6 @@ conversion
 override
 final
 control
-spec
 strong
 exceptions
 option
@@ -76,7 +72,6 @@ access
 member
 counter
 file
-stat
 specialization
 partial
 two
@@ -134,7 +129,6 @@ binary
 shifted
 tag
 identity
-res
 split
 parens
 use
@@ -142,12 +136,10 @@ strict
 string
 any
 shared
-ext
 allocator
 future
 ratio
 array
-regex
 emplace
 random
 have
@@ -168,7 +160,6 @@ cast
 least
 min
 fit
-config
 link
 skipped
 method
@@ -214,7 +205,6 @@ set
 flag
 mem
 leak
-mini
 dump
 handle
 pointers
@@ -229,14 +219,12 @@ information
 current
 process
 dword
-user
 callback
 reinterpret
 read
 share
 always
 invalid
-ret
 close
 dummy
 bits
@@ -265,12 +253,10 @@ equal
 forward
 matching
 replace
-pos
 strip
 leading
 trailing
 blank
-remove
 delimiter
 parsed
 back
@@ -340,7 +326,6 @@ variable
 win
 wide
 byte
-info
 instance
 second
 source
@@ -364,7 +349,6 @@ cur
 lead
 trail
 iso
-sys
 indefinite
 stop
 watch
@@ -379,7 +363,6 @@ since
 epoch
 tick
 seed
-gen
 discard
 init
 uniform
@@ -422,7 +405,6 @@ origin
 output
 parse
 command
-def
 truncate
 all
 open
@@ -459,7 +441,6 @@ terse
 separate
 node
 next
-ref
 distance
 difference
 sort
@@ -539,7 +520,6 @@ holder
 detach
 attach
 collector
-util
 other
 range
 step
@@ -565,7 +545,6 @@ held
 bad
 instantiate
 relative
-sep
 tail
 head
 bind
@@ -610,7 +589,6 @@ input
 item
 advance
 map
-obj
 own
 death
 threadsafe
@@ -623,13 +601,10 @@ sanitize
 hide
 compile
 collections
-comp
 quiet
-exec
 visual
 studio
 fake
-useful
 sorry
 numeric
 overwrite
@@ -651,7 +626,6 @@ unrecognized
 containing
 star
 notifier
-charset
 ascii
 response
 initial
@@ -735,7 +709,6 @@ device
 lock
 offset
 immediately
-reg
 query
 save
 security
@@ -768,7 +741,6 @@ righthand
 look
 perspective
 center
-ortho
 postfix
 safe
 focus
@@ -847,7 +819,6 @@ loop
 strikeout
 offscreen
 plain
-temp
 edge
 paste
 roundup
@@ -897,7 +868,6 @@ neg
 lerp
 clamp
 complex
-ceil
 floor
 denormal
 quaternion
@@ -918,13 +888,11 @@ fab
 qword
 radian
 equation
-ave
 geometric
 binomial
 logistic
 equiprobability
 specified
-perm
 asp
 computing
 red
@@ -1258,7 +1226,6 @@ cylinder
 fore
 workshop
 cookie
-topic
 category
 inclusive
 pane
@@ -1376,7 +1343,6 @@ professional
 cluster
 foundation
 essential
-hyper
 installation
 architecture
 suite
@@ -1429,7 +1395,6 @@ marc
 mime
 consent
 batch
-cert
 sieve
 beep
 delivery
@@ -1473,9 +1438,7 @@ cant
 magic
 front
 paper
-rep
 merge
-intro
 interactive
 opposite
 clink
@@ -1504,7 +1467,6 @@ dialect
 tune
 micro
 exchange
-rev
 subtractive
 aperture
 convolution
@@ -1551,10 +1513,8 @@ accessible
 dirty
 shown
 designer
-auto
 continuous
 interop
-unc
 substring
 marshal
 delete
@@ -1592,7 +1552,6 @@ not
 evaluation
 evaluator
 multiline
-percent
 sync
 apartment
 probably
@@ -1895,7 +1854,6 @@ further
 exceeds
 later
 insecure
-par
 termination
 nested
 semicolon
@@ -2018,7 +1976,6 @@ adjacent
 backward
 stable
 lexicographical
-symmetric
 nth
 pushback
 boundaries
@@ -2221,7 +2178,6 @@ bucket
 manage
 mutant
 unconstrained
-san
 mutate
 above
 metadata
@@ -2229,7 +2185,6 @@ assignable
 symmetrical
 relocate
 beneath
-optimization
 serializable
 preamble
 naked
@@ -2290,8 +2245,6 @@ intermediate
 reduce
 pat
 sentry
-kilo
-mega
 plural
 singular
 timezone
