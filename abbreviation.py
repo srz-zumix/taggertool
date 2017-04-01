@@ -76,13 +76,13 @@ class Cache:
         if os.path.exists(path):
             f = open(path, 'r')
             for w in f:
-            self.gene.append(w.rstrip())
+                self.gene.append(w.rstrip())
             f.close()
         path = Cache.get_abbreviation_filename(dir, self.name)
         if os.path.exists(path):
             f = open(path, 'r')
             for w in f:
-            self.abbreviations.append(w.rstrip())
+                self.abbreviations.append(w.rstrip())
             f.close()
 
     def _open(self, dir, mode):
@@ -140,6 +140,27 @@ class Cache:
             self.abbreviations_file.flush()
 
 
+class DictResult:
+    Found = 0
+    NoCheck = 1
+    Abbreviation = -1
+    NotFound = -2
+
+    @staticmethod
+    def is_suspicion(r):
+        if r >= 0:
+            return False
+        return True
+
+class WordResult:
+    def __init__(self, r, location):
+        self.result = r
+        self.locations = [ location ]
+
+    def add_location(self, location):
+        self.locations.append(location)
+
+
 service_cache = {}
 words = {}
 checked_words = []
@@ -162,7 +183,7 @@ def parse_command_line():
         '-v',
         '--version',
         action='version',
-        version=u'%(prog)s version 0.1'
+        version=u'%(prog)s version 0.2'
     )
     parser.add_argument(
         '-g',
@@ -360,31 +381,51 @@ def check_abbreviation_glosbe(word, d):
                     desc = m.group(2).lower().strip()
                     if re.match('^(a\s|)' + word + '\w', desc):
                         return -5
-        # XXX の略語って意味はダメ
-        if text.startswith('abbreviation of'):
-            if not text.startswith('abbreviation of ' + word + ' '):
+        # 先頭の 'A ', 'An ' を取り除く
+        if text.startswith('a '):
+            text = text[2:]
+        if text.startswith('an '):
+            text = text[3:]
+        # 末尾の . を削除
+        text = text.rstrip('.')
+        # 完全一致したら略語じゃない
+        if text == word:
+            return 2
+        # 一単語のみの場合
+        if len(text.split()) == 1:
+            # ゴミ？
+            if 'dust' == text:
+                return -1
+            # 前方一致した場合は略語と判定
+            if text.startswith(word):
+                diff = len(text) - len(word)
+                # 過去形だったら略語じゃない
+                if text[-2:] == 'ed' and diff < 3:
+                    return 2
                 return -5
-        if text.startswith('abbreviation for'):
-            if not text.startswith('abbreviation for ' + word + ' '):
-                return -5
-        if text.startswith('an abbreviation for'):
-            if not text.startswith('an abbreviation for ' + word + ' '):
-                return -5
-        if text.startswith('short for'):
-            if not text.startswith('short for ' + word + ' '):
-                return -5
-        if text.startswith('shortened form of'):
-            if not text.startswith('shortened form of ' + word + ' '):
-                return -5
-        if text.startswith('clipped form of'):
-            if not text.startswith('clipped form of ' + word + ' '):
-                return -5
-        # 一単語のみで前方一致した場合は略語と判定
-        #if text.startswith(word) and len(text.split()) == 1:
-        #    return -1
-        # ゴミ？
-        if 'dust' == text:
-            return -1
+        else:
+            # XXX の略語って意味はダメ
+            if text.startswith('abbreviation of'):
+                if not text.startswith('abbreviation of ' + word + ' '):
+                    return -5
+            if text.startswith('abbreviation for'):
+                if not text.startswith('abbreviation for ' + word + ' '):
+                    return -5
+            if text.startswith('short for'):
+                if not text.startswith('short for ' + word + ' '):
+                    return -5
+            if text.startswith('short from for'):
+                if not text.startswith('short from for ' + word + ' '):
+                    return -5
+            if text.startswith('shortened form of'):
+                if not text.startswith('shortened form of ' + word + ' '):
+                    return -5
+            if text.startswith('clipped form of'):
+                if not text.startswith('clipped form of ' + word + ' '):
+                    return -5
+            if text.startswith('alternative from of'):
+                if not text.startswith('alternative from of ' + word + ' '):
+                    return -5
     return 1
 
 
@@ -413,13 +454,13 @@ def has_glosbe_ja_meaings(t):
     return False
 
 
-def is_suspicion_glosbe_impl(word):
+def check_suspicion_glosbe_impl(word):
     try:
         r = Glosbe.Translate(word, Glosbe.EN, Glosbe.JA)
         if r['result'] == 'ok':
             tuc = r['tuc']
             if len(tuc) == 0:
-                return True
+                return DictResult.NotFound
 
             has_ja = False
             # 辞書ごとのリストを作成する
@@ -429,7 +470,7 @@ def is_suspicion_glosbe_impl(word):
                 if has_glosbe_ja_meaings(t):
                     has_ja = True
                 # 1,2736 の辞書だけ使う
-                if any(x in [1, 2736] for x in t['authors']):
+                if any(x in [1, 2736, 91945] for x in t['authors']):
                     master_dicts.append(t)
                 # それ以外の辞書のうち略語判定のみに使用
                 elif any(x in [91945] for x in t['authors']):
@@ -438,20 +479,21 @@ def is_suspicion_glosbe_impl(word):
             score = get_abbreviation_glosbe_score(word, master_dicts)
             if score < 0:
                 add_abbreviation('glosbe', word)
-                return True
+                return DictResult.Abbreviation
 
             if not has_ja and score < 5:
                 for t in optional_dicts:
                     if check_abbreviation_glosbe_tuc(word, t) < 0:
                         add_abbreviation('glosbe', word)
-                        return True
+                        return DictResult.Abbreviation
             if len(master_dicts) > 0:
                 add_cache('glosbe', word)
-                return False
+                return DictResult.Found
     except requests.HTTPError as e:
         print("Http error:", e.message)
         if e.response.status_code == 429:
             print("request count: ", Glosbe.count)
+            print("Please access the glosbe, click the search button and check reCAPTCHA.")
             options.glosbe = False
             if options.debug:
                 sys.exit(1)
@@ -460,17 +502,14 @@ def is_suspicion_glosbe_impl(word):
     except:
         print("Unexpected error: \"{0}\" :".format(word), sys.exc_info()[0])
         raise
-    return True
+    return DictResult.NotFound
 
 
-def is_suspicion_glosbe(word):
+def check_suspicion_glosbe(word):
     # 2文字以下は略語かどうかの判別がつけにくいため除外
     if len(word) <= 2:
-        return False
-    if is_suspicion_glosbe_impl(word):
-        return True
-    else:
-        return False
+        return DictResult.NoCheck
+    return check_suspicion_glosbe_impl(word)
 
 
 def is_abbreviation_dejizo_word_impl(word, body):
@@ -504,10 +543,7 @@ def is_abbreviation_dejizo_impl(word, search_result, dict):
     return True
 
 
-# retval  0 = ヒット
-# retval  1 = ノーヒット
-# retval -1 = 略語
-def is_suspicion_dejizo_impl(word, dict):
+def check_suspicion_dejizo_impl(word, dict):
     try:
         r = Dejizo.search(word, dict)
         d = Dejizo.response_to_result(r)
@@ -516,40 +552,40 @@ def is_suspicion_dejizo_impl(word, dict):
             count = int(result['ItemCount'])
             if count > 0:
                 if len(word) > 4:
-                    return 0
+                    return DictResult.Found
                 # 短い単語は詳細を get して調べる
                 if Dejizo.is_getable(word, dict):
                     try:
                         if is_abbreviation_dejizo_impl(word, d, dict):
                             add_abbreviation('dejizo', word)
-                            return -1
+                            return DictResult.Abbreviation
                         else:
-                            return 0
+                            return DictResult.Found
                     except:
                         print("Unexpected error: " + word + " :" , sys.exc_info()[0])
                         pass
     except:
         pass
-    return 1
+    return DictResult.NotFound
 
 
-def is_suspicion_dejizo(word):
+def check_suspicion_dejizo(word):
     # 2文字以下は略語かどうかの判別がつけにくいため除外
     if len(word) <= 2:
-        return False
-    # どちらかの辞書に略語としてあったら即時 True
-    ret = is_suspicion_dejizo_impl(word, Dejizo.DailyEJL)
-    if ret < 0:
-        return True
-    ret2 = is_suspicion_dejizo_impl(word, Dejizo.EJdict)
-    if ret2 < 0:
-        return True
-    # どちらの辞書にもなかったら True
-    if ret > 0 and ret2 > 0:
-        return True
+        return DictResult.NoCheck
+    # どちらかの辞書に略語としてあったら即時 return
+    ret = check_suspicion_dejizo_impl(word, Dejizo.DailyEJL)
+    if ret == DictResult.Abbreviation:
+        return DictResult.Abbreviation
+    ret2 = check_suspicion_dejizo_impl(word, Dejizo.EJdict)
+    if ret2 == DictResult.Abbreviation:
+        return DictResult.Abbreviation
+    # どちらの辞書にもなかったら return
+    if ret == DictResult.NotFound and ret2 == DictResult.NotFound:
+        return DictResult.NotFound
     # どちらかの辞書にあったらキャッシュに登録
     add_cache('dejizo', word)
-    return False
+    return DictResult.Found
 
 
 def is_whitelist(word):
@@ -697,33 +733,35 @@ def is_suspicion_pre_suffix(word, length):
     return True
 
 
-def is_suspicion(word):
+def check_suspicion(word):
     length = len(word)
     # 1文字だけは除外
     if length <= 1:
-        return False
+        return DictResult.NoCheck
     if not isalpha(word):
-        return False
+        return DictResult.NoCheck
     if is_whitelist(word):
-        return False
+        return DictResult.Found
     # 略語リストにあったら即アウト
     for cache in service_cache.values():
         if word in cache.abbreviations:
-            return True
+            return DictResult.Abbreviation
     # 接尾辞
     if not is_suspicion_post_suffix(word, length):
-        return False
+        return DictResult.Found
     # 接頭辞
     if not is_suspicion_pre_suffix(word, length):
-        return False
+        return DictResult.Found
     # Web API
     if options.glosbe:
-        if not is_suspicion_glosbe(word):
-            return False
+        r = check_suspicion_glosbe(word)
+        if r != DictResult.NotFound:
+            return r
     if options.dejizo:
-        if not is_suspicion_dejizo(word):
-            return False
-    return True
+        r = check_suspicion_dejizo(word)
+        if r != DictResult.NotFound:
+            return r
+    return DictResult.NotFound
 
 
 r_sign = re.compile('[!-/:-@[-`{-~]')
@@ -736,9 +774,24 @@ def text_transform(text):
     return text
 
 
-def checktagger(filepath, text, line):
+def checkword(word, filepath, line, detected_words):
     global words
     global checked_words
+    if not word in checked_words:
+        location = Location(filepath, line)
+        if words.has_key(word):
+            words[word].add_location(location)
+            detected_words.append({word: location})
+        else:
+            result = check_suspicion(word)
+            if DictResult.is_suspicion(result):
+                words[word] = WordResult(result, location)
+                detected_words.append({word: location})
+            else:
+                checked_words.append(word)
+
+
+def checktagger(filepath, text, line):
     detected_words = []
     tags_plain = tagger.TagText(text)
     tags = treetaggerwrapper.make_tags(tags_plain)
@@ -746,16 +799,7 @@ def checktagger(filepath, text, line):
         if isinstance(tag, treetaggerwrapper.NotTag):
             continue
         word = tag.word.lower()
-        if not word in checked_words:
-            location = Location(filepath, line)
-            if words.has_key(word):
-                words[word].append(location)
-                detected_words.append({word: location})
-            elif is_suspicion(word):
-                words[word] = [location]
-                detected_words.append({word: location})
-            else:
-                checked_words.append(word)
+        checkword(word, filepath, line, detected_words)
     return detected_words
 
 
@@ -765,16 +809,7 @@ def checksplit(filepath, text, line):
     detected_words = []
     for tag in text.split():
         word = tag.lower()
-        if not word in checked_words:
-            location = Location(filepath, line)
-            if words.has_key(word):
-                words[word].append(location)
-                detected_words.append({word: location})
-            elif is_suspicion(word):
-                words[word] = [location]
-                detected_words.append({word: location})
-            else:
-                checked_words.append(word)
+        checkword(word, filepath, line, detected_words)
     return detected_words
 
 
@@ -851,18 +886,30 @@ def get_print_path(location):
         return location.file
 
 
+def make_base_message(location, k):
+    return "{0}({1}): warning: \"{2}\"".format(get_print_path(location), location.line, k)
+
 def printresult():
     if options.list_all:
         for k,v in sorted(words.items(), key=lambda x: len(x[1])):
-            for location in v:
-                print("{0}({1}): warning: \"{2}\": is ok ??".format(get_print_path(location), location.line, k))
+            r = v.result
+            for location in v.locations:
+                if r == DictResult.Abbreviation:
+                    print("{0}: is abbreviation".format(make_base_message(location, k)))
+                else:
+                    print("{0}: is ok ??".format(make_base_message(location, k)))
     else:
         for k,v in sorted(words.items(), key=lambda x: x[0]):
-            location = v[0]
-            if len(v) > 1:
-                print("{0}({1}): warning: \"{2}\": is ok ?? ({3})".format(get_print_path(location), location.line, k, len(v)))
+            r = v.result
+            location = v.locations[0]
+            if r == DictResult.Abbreviation:
+                msg = "{0}: is abbreviation".format(make_base_message(location, k))
             else:
-                print("{0}({1}): warning: \"{2}\": is ok ??".format(get_print_path(location), location.line, k))
+                msg = "{0}: is ok ??".format(make_base_message(location, k))
+            if len(v.locations) > 1:
+                print("{0} ({1})".format(msg, len(v.locations)))
+            else:
+                print(msg)
         print("Total number detected: {0}".format(len(words)))
 
 
