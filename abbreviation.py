@@ -8,6 +8,7 @@ import codecs
 import requests
 import unicodedata
 import argparse
+import shutil
 
 import keywords
 import filereader
@@ -64,21 +65,35 @@ class Cache:
     def setup(self, dir):
         if not os.path.exists(dir):
             os.makedirs(dir)
-        self._load(dir, 'a+')
+        self._load(dir)
+        self._open(dir, 'a')
 
     def load(self, dir):
         self._load(dir)
 
-    def _load(self, dir, mode):
-        self._open(dir, mode)
-        for w in self.gene_file:
+    def _load(self, dir):
+        path = Cache.get_gene_filename(dir, self.name)
+        if os.path.exists(path):
+            f = open(path, 'r')
+            for w in f:
             self.gene.append(w.rstrip())
-        for w in self.abbreviations_file:
+            f.close()
+        path = Cache.get_abbreviation_filename(dir, self.name)
+        if os.path.exists(path):
+            f = open(path, 'r')
+            for w in f:
             self.abbreviations.append(w.rstrip())
+            f.close()
 
     def _open(self, dir, mode):
         self.gene_file = open(Cache.get_gene_filename(dir, self.name), mode)
         self.abbreviations_file = open(Cache.get_abbreviation_filename(dir, self.name), mode)
+
+    def _close(self):
+        if self.gene_file:
+            self.gene_file.close()
+        if self.abbreviations_file:
+            self.abbreviations_file.close()
 
     @staticmethod
     def get_gene_filename(dir, name):
@@ -87,6 +102,30 @@ class Cache:
     @staticmethod
     def get_abbreviation_filename(dir, name):
         return dir + '/' + name + '_abbreviations.txt'
+
+    @staticmethod
+    def islock(dir, name):
+        for f in Cache.get_files(dir, name):
+            if os.path.exists(f + '.lock'):
+                return True
+        return False
+
+    @staticmethod
+    def lock(dir, name):
+        if not Cache.islock(dir, name):
+            for f in Cache.get_files(dir, name):
+                shutil.copy(f, f + '.lock')
+
+    @staticmethod
+    def unlock(dir, name):
+        for f in Cache.get_files(dir, name):
+            lockfile = f + '.lock'
+            if os.path.exists(lockfile):
+                os.remove(lockfile)
+
+    @staticmethod
+    def get_files(dir, name):
+        return [ Cache.get_gene_filename(dir, name), Cache.get_abbreviation_filename(dir, name) ]
 
     def add(self, word):
         self.gene.append(word)
@@ -104,6 +143,7 @@ class Cache:
 service_cache = {}
 words = {}
 checked_words = []
+cache_choices = ['glosbe', 'dejizo']
 
 
 def add_abbreviation(dict, word):
@@ -169,6 +209,7 @@ def parse_command_line():
         '--load-cache',
         action='append',
         metavar='NAME',
+        choices=cache_choices,
         help='load translation cache'
     )
     parser.add_argument(
@@ -181,6 +222,11 @@ def parse_command_line():
         '--disable-keywords',
         action='store_true',
         help='disable general and language keywords'
+    )
+    parser.add_argument(
+        '--cache-rebuild',
+        choices=cache_choices,
+        help=argparse.SUPPRESS
     )
     parser.add_argument(
         '-x',
@@ -878,12 +924,28 @@ def setup_cache(name):
     service_cache[name] = cache
 
 
+def setup_cache_rebuild():
+    files = Cache.get_files(options.cache_dir, options.cache_rebuild)
+    options.file = []
+    locked = Cache.islock(options.cache_dir, options.cache_rebuild)
+    Cache.lock(options.cache_dir, options.cache_rebuild)
+    for f in files:
+        lockfile = f + '.lock'
+        options.file.append(lockfile)
+        if not locked:
+            os.remove(f)
+    options.cache = True
+    setattr(options, options.cache_rebuild, True)
+
+
 def setup():
     global gene
     global whitelist
     global abbreviations
     if options.cache_dir is None:
         options.cache_dir = os.path.join(os.path.dirname(__file__), 'cache')
+    if options.cache_rebuild:
+        setup_cache_rebuild()
     if options.gene:
         for g in options.gene:
             gene.extend(make_gene(g))
@@ -894,10 +956,9 @@ def setup():
         for f in options.abbreviation:
             abbreviations.extend(make_wordlist(f))
     if options.cache:
-        if options.glosbe:
-            setup_cache('glosbe')
-        if options.dejizo:
-            setup_cache('dejizo')
+        for name in cache_choices:
+            if getattr(options, name):
+                setup_cache(name)
     if options.exclude:
         for e in options.exclude:
             whitelist.extend(e.split(','))
@@ -947,6 +1008,8 @@ def main():
             parser.print_help()
         else:
             checkfilelist()
+    if options.cache_rebuild:
+        Cache.unlock(options.cache_dir, options.cache_rebuild)
 
 
 if __name__ == '__main__':
