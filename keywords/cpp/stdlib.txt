@@ -304,6 +304,7 @@ timegm
 timespec
 timeval
 tm_mday
+tm_yday
 tolower
 toupper
 towlower
