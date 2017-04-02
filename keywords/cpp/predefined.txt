@@ -1,0 +1,5 @@
+_BSD_SOURCE
+_XOPEN_SOURCE
+__SUNPRO_CC
+__SYMBIAN__
+__clang_patchlevel__
