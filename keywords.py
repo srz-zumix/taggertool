@@ -68,7 +68,7 @@ loaded = []
 def _load_dir(dir):
     if dir in loaded:
         return
-    root = os.path.join('keywords', dir)
+    root = os.path.join(os.path.join(os.path.dirname(__file__), 'keywords'), dir)
     if not os.path.exists(root):
         return
     for filename in os.listdir(root):
@@ -200,13 +200,8 @@ def getkeywords(file):
 #
 def export_list(list, filepath):
     f = open(filepath, 'w')
-    for w in sorted(list):
+    for w in sorted(set(list)):
         f.write(str(w) + '\n')
-
-
-def _load():
-    _load_dir('cs')
-    _load_dir('cpp')
 
 
 def _export_dir(dir):
@@ -217,6 +212,11 @@ def _export_dir(dir):
         if name.startswith(dir + '_') and isinstance(v, list):
             filename = '{1}.txt'.format(dir, name[len(dir)+1:])
             export_list(v, os.path.join(root, filename))
+
+
+def _load():
+    _load_dir('cs')
+    _load_dir('cpp')
 
 
 def _export():

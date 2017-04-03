@@ -1,7 +1,3 @@
-True
-True
-True
-True
 __cxa_demangle
 _mkdir
 abi
