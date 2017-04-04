@@ -642,9 +642,6 @@ def check_suspicion_dejizo(word):
 def is_whitelist(word):
     if word in whitelist:
         return True
-    if langkeywords and not options.disable_keywords:
-        if word in langkeywords:
-            return True
     # 辞書にあったら除外
     if word in gene:
         return True
@@ -793,6 +790,10 @@ def check_suspicion(word):
         return DictResult.NoCheck
     if is_whitelist(word):
         return DictResult.Found
+    # 言語キーワードにあったら略語じゃない
+    if langkeywords and not options.disable_keywords:
+        if word in langkeywords:
+            return DictResult.Found
     # 略語リストにあったら即アウト
     for cache in service_cache.values():
         if word in cache.abbreviations:
