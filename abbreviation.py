@@ -68,6 +68,9 @@ class Cache:
         self._load(dir)
         self._open(dir, 'a')
 
+    def teardown(self):
+        self._close()
+
     def load(self, dir):
         self._load(dir)
 
@@ -124,6 +127,20 @@ class Cache:
                 os.remove(lockfile)
 
     @staticmethod
+    def sort(dir, name):
+        for f in Cache.get_files(dir, name):
+            if os.path.exists(f):
+                words = []
+                f = open(path, 'r')
+                for w in f:
+                    words.append(w.rstrip())
+                f.close()
+                f = open(path, 'w')
+                for w in sorted(set(words)):
+                    f.write(w + '\n')
+                f.close()
+
+    @staticmethod
     def get_files(dir, name):
         return [ Cache.get_gene_filename(dir, name), Cache.get_abbreviation_filename(dir, name) ]
 
@@ -140,17 +157,23 @@ class Cache:
             self.abbreviations_file.flush()
 
 
+class MisspellingError(Exception):
+    pass
+
+
 class DictResult:
     Found = 0
     NoCheck = 1
     Abbreviation = -1
     NotFound = -2
+    Misspelling = -3
 
     @staticmethod
     def is_suspicion(r):
         if r >= 0:
             return False
         return True
+
 
 class WordResult:
     def __init__(self, r, location):
@@ -388,6 +411,12 @@ def check_abbreviation_glosbe(word, d):
             text = text[3:]
         # 末尾の . を削除
         text = text.rstrip('.')
+        # タグを削除
+        for tag in ['i']:
+            text = text.replace('<'  + tag + '>', '')
+            text = text.replace('</' + tag + '>', '')
+            text = text.replace('['  + tag + ']', '')
+            text = text.replace('</' + tag + ']', '')
         # 完全一致したら略語じゃない
         if text == word:
             return 2
@@ -426,6 +455,9 @@ def check_abbreviation_glosbe(word, d):
             if text.startswith('alternative from of'):
                 if not text.startswith('alternative from of ' + word + ' '):
                     return -5
+            # misspelling
+            if text.startswith('misspelling of'):
+                raise MisspellingError
     return 1
 
 
@@ -440,55 +472,74 @@ def check_abbreviation_glosbe_tuc(word, t):
 
 def get_abbreviation_glosbe_score(word, tuc):
     score = 0
+    misspelling = False
     for t in tuc:
-        rs = check_abbreviation_glosbe_tuc(word, t)
-        score += rs
-    return score
+        try:
+            rs = check_abbreviation_glosbe_tuc(word, t)
+            score += rs
+        except MisspellingError:
+            misspelling = True
+        except:
+            raise
+    return score, misspelling
 
 
-def has_glosbe_ja_meaings(t):
+def has_glosbe_ja_meaings_or_phrase(t):
     if 'meanings' in t:
         for meaning in t['meanings']:
             if meaning['language'] == Glosbe.JA:
                 return True
+    if 'phrase' in t:
+        if t['phrase']['language'] == Glosbe.JA:
+            return True
     return False
+
+
+def _check_suspicion_glosbe_impl(word, translate_word):
+    r = Glosbe.Translate(translate_word, Glosbe.EN, Glosbe.JA)
+    if r['result'] == 'ok':
+        tuc = r['tuc']
+        if len(tuc) == 0:
+            return DictResult.NotFound
+
+        has_ja = False
+        # 辞書ごとのリストを作成する
+        master_dicts = []
+        optional_dicts = []
+        for t in tuc:
+            if has_glosbe_ja_meaings_or_phrase(t):
+                has_ja = True
+            # 1,2736 の辞書だけ使う
+            if any(x in [1, 2736, 91945] for x in t['authors']):
+                master_dicts.append(t)
+            # それ以外の辞書のうち略語判定のみに使用
+            elif any(x in [91945] for x in t['authors']):
+                optional_dicts.append(t)
+
+        score, misspelling = get_abbreviation_glosbe_score(word, master_dicts)
+        if score < 0:
+            add_abbreviation('glosbe', word)
+            return DictResult.Abbreviation
+
+        if not has_ja and score < 5:
+            for t in optional_dicts:
+                if check_abbreviation_glosbe_tuc(word, t) < 0:
+                    add_abbreviation('glosbe', word)
+                    return DictResult.Abbreviation
+        if len(master_dicts) > 0:
+            add_cache('glosbe', word)
+            return DictResult.Found
+        if misspelling:
+            return DictResult.Misspelling
+        if has_ja:
+            # case sensitive なので先頭を大文字にしてリトライ
+            return _check_suspicion_glosbe_impl(word, (word[0]).upper() + word[1:])
+    return DictResult.NotFound
 
 
 def check_suspicion_glosbe_impl(word):
     try:
-        r = Glosbe.Translate(word, Glosbe.EN, Glosbe.JA)
-        if r['result'] == 'ok':
-            tuc = r['tuc']
-            if len(tuc) == 0:
-                return DictResult.NotFound
-
-            has_ja = False
-            # 辞書ごとのリストを作成する
-            master_dicts = []
-            optional_dicts = []
-            for t in tuc:
-                if has_glosbe_ja_meaings(t):
-                    has_ja = True
-                # 1,2736 の辞書だけ使う
-                if any(x in [1, 2736, 91945] for x in t['authors']):
-                    master_dicts.append(t)
-                # それ以外の辞書のうち略語判定のみに使用
-                elif any(x in [91945] for x in t['authors']):
-                    optional_dicts.append(t)
-
-            score = get_abbreviation_glosbe_score(word, master_dicts)
-            if score < 0:
-                add_abbreviation('glosbe', word)
-                return DictResult.Abbreviation
-
-            if not has_ja and score < 5:
-                for t in optional_dicts:
-                    if check_abbreviation_glosbe_tuc(word, t) < 0:
-                        add_abbreviation('glosbe', word)
-                        return DictResult.Abbreviation
-            if len(master_dicts) > 0:
-                add_cache('glosbe', word)
-                return DictResult.Found
+        return _check_suspicion_glosbe_impl(word, word)
     except requests.HTTPError as e:
         print("Http error:", e.message)
         if e.response.status_code == 429:
@@ -781,12 +832,12 @@ def checkword(word, filepath, line, detected_words):
         location = Location(filepath, line)
         if words.has_key(word):
             words[word].add_location(location)
-            detected_words.append({word: location})
+            detected_words.append({'word': word, 'location': location, 'result': words[word].result})
         else:
             result = check_suspicion(word)
             if DictResult.is_suspicion(result):
                 words[word] = WordResult(result, location)
-                detected_words.append({word: location})
+                detected_words.append({'word': word, 'location': location, 'result': words[word].result})
             else:
                 checked_words.append(word)
 
@@ -870,8 +921,9 @@ def check(f, report_in_line):
                     detected_words = checktagger(filepath, text_transform(text), line_count)
                 if report_in_line:
                     for d in detected_words:
-                        for word in d.keys():
-                            print("warning: \"{0}\": is ok ??".format(word))
+                        word = d['word']
+                        result = d['result']
+                        print(make_warning_message(result, word))
         line_count += 1
         line = f.readline()
         if options.progress and not report_in_line:
@@ -886,26 +938,32 @@ def get_print_path(location):
         return location.file
 
 
-def make_base_message(location, k):
-    return "{0}({1}): warning: \"{2}\"".format(get_print_path(location), location.line, k)
+
+def make_warning_message(r, k):
+    if r == DictResult.Abbreviation:
+        t = 'abbreviation'
+    elif r == DictResult.Misspelling:
+        t = 'misspelling'
+    else:
+        t = 'ok ??'
+    return "warning: \"{0}\": is {1}".format(k, t)
+
+
+def make_base_message(location, r, k):
+    return "{0}({1}): {2}".format(get_print_path(location), location.line, make_warning_message(r, k))
+
 
 def printresult():
     if options.list_all:
         for k,v in sorted(words.items(), key=lambda x: len(x[1])):
             r = v.result
             for location in v.locations:
-                if r == DictResult.Abbreviation:
-                    print("{0}: is abbreviation".format(make_base_message(location, k)))
-                else:
-                    print("{0}: is ok ??".format(make_base_message(location, k)))
+                print(make_base_message(location, r, k))
     else:
         for k,v in sorted(words.items(), key=lambda x: x[0]):
             r = v.result
             location = v.locations[0]
-            if r == DictResult.Abbreviation:
-                msg = "{0}: is abbreviation".format(make_base_message(location, k))
-            else:
-                msg = "{0}: is ok ??".format(make_base_message(location, k))
+            msg = make_base_message(location, r, k)
             if len(v.locations) > 1:
                 print("{0} ({1})".format(msg, len(v.locations)))
             else:
@@ -1025,6 +1083,15 @@ def setup():
         Glosbe.set_safe_mode(False)
 
 
+def teardown():
+    for cache in service_cache.values():
+        cache.teardown()
+    if options.cache_rebuild:
+        if getattr(options, options.cache_rebuild):
+            #Cache.sort(options.cache_dir, options.cache_rebuild)
+            Cache.unlock(options.cache_dir, options.cache_rebuild)
+
+
 def checkfilelist():
     if not options.file:
         return
@@ -1063,8 +1130,7 @@ def main():
             parser.print_help()
         else:
             checkfilelist()
-    if options.cache_rebuild:
-        Cache.unlock(options.cache_dir, options.cache_rebuild)
+    teardown()
 
 
 if __name__ == '__main__':

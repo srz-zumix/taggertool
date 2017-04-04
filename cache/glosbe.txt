@@ -181,7 +181,6 @@ append
 generator
 clock
 per
-sec
 check
 minidump
 socket
@@ -348,7 +347,6 @@ low
 cur
 lead
 trail
-iso
 indefinite
 stop
 watch
@@ -763,7 +761,6 @@ sound
 light
 antialias
 stencil
-perf
 depth
 interval
 lockable
@@ -862,7 +859,6 @@ bezier
 practical
 combination
 polynomial
-div
 prim
 neg
 lerp
@@ -903,7 +899,6 @@ big
 cab
 anger
 one
-est
 odd
 mix
 will
@@ -1016,7 +1011,6 @@ immediate
 triangle
 mirror
 dither
-math
 degree
 subtract
 management
@@ -2141,7 +2135,6 @@ fusion
 metafunction
 promote
 modulus
-arr
 complement
 covariance
 variate
@@ -2305,14 +2298,11 @@ gregorian
 constrained
 violated
 jan
-ptr
 fractional
 weekdays
 mar
-apr
 jun
 oct
-num
 adapted
 adj
 weekday
@@ -2322,7 +2312,6 @@ fka
 third
 fourth
 fifth
-var
 widen
 wks
 decade
@@ -2331,7 +2320,6 @@ lexical
 undelimited
 fac
 dst
-calc
 sub
 gather
 formatters
@@ -2345,14 +2333,11 @@ abbrev
 daylight
 savings
 coordinated
-microsec
 delimited
-func
 ice
 tod
 subsecond
 coll
-adv
 tenth
 hundreth
 hundredth
@@ -2365,12 +2350,10 @@ locate
 datafile
 got
 underflow
-aux
 compliant
 bitmask
 isp
 fwd
-dest
 params
 frame
 incrementable
@@ -2389,8 +2372,6 @@ thru
 then
 choice
 underlying
-cont
-proc
 ace
 synchronization
 page
