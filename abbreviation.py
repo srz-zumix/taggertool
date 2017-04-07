@@ -431,6 +431,9 @@ def check_abbreviation_glosbe(word, d):
                 # 過去形だったら略語じゃない
                 if text[-2:] == 'ed' and diff < 3:
                     return 2
+                # 形容詞だったら略語じゃない
+                if text[-2:] == 'ly' and diff == 2:
+                    return 2
                 return -5
         else:
             # XXX の略語って意味はダメ

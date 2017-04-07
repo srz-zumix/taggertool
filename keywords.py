@@ -11,10 +11,12 @@ commonwords =  [ 'alpha'
                 , 'cpplint'
                 , 'cuda'
                 , 'csv'
+                , 'cpu'
                 , 'dot'
                 , 'doxygen'
                 , 'endian'
                 , 'euc'
+                , 'fpu'
                 , 'freebsd'
                 , 'giga'
                 , 'google'
@@ -44,6 +46,7 @@ commonwords =  [ 'alpha'
                 , 'unicode'
                 , 'url'
                 , 'utf'
+                , 'unix'
                 , 'wandbox'
                 , 'xterm'
                 ]
@@ -58,6 +61,9 @@ xmlwords = [  'xml'
             , 'xmlheader'
             , 'xmlprinter'
            ]
+
+doxygenwords = [ 'retval'
+            ]
 
 cppext = [ '.c', '.cpp', '.cxx', '.cc', '.h', '.hpp', '.hxx', '.ipp' ]
 csext = [ '.cs' ]
@@ -88,14 +94,14 @@ def _load_dir(dir):
 def appendix(d):
     for word in d:
         if '_' in str(word):
-            d.append(word.replace('_', ''))
+            #d.append(word.replace('_', ''))
             for s in word.split('_'):
                 if len(s) > 2 and s not in d:
                     d.append(s)
 
 
 def extend_keywords(keywords, add):
-    keywords.extend([ str(s).lower() for s in add ])
+    keywords.extend([ str(s).lower() for s in add if not s.startswith('#') ])
 
 
 def make_cppkeywords():
@@ -105,6 +111,7 @@ def make_cppkeywords():
         if name.startswith('cpp_') and isinstance(v, list): 
             extend_keywords(langkeywords, v)
     extend_keywords(langkeywords, xmlwords)
+    extend_keywords(langkeywords, doxygenwords)
     appendix(langkeywords)
     langkeywords.sort()
     return langkeywords
