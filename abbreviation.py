@@ -473,13 +473,22 @@ def check_abbreviation_glosbe_tuc(word, t):
     return 0
 
 
-def get_abbreviation_glosbe_score(word, tuc):
+def get_abbreviation_glosbe_score(word, tuc, optional_tuc):
     score = 0
     misspelling = False
     for t in tuc:
         try:
             rs = check_abbreviation_glosbe_tuc(word, t)
             score += rs
+        except MisspellingError:
+            misspelling = True
+        except:
+            raise
+    for t in optional_tuc:
+        try:
+            rs = check_abbreviation_glosbe_tuc(word, t)
+            if rs < 0:
+                score += rs
         except MisspellingError:
             misspelling = True
         except:
@@ -517,22 +526,22 @@ def _check_suspicion_glosbe_impl(word, translate_word=None):
             if has_glosbe_ja_meaings_or_phrase(t):
                 has_ja = True
             # 1,2736 の辞書だけ使う
-            if any(x in [1, 2736, 91945] for x in t['authors']):
+            if any(x in [1, 2736] for x in t['authors']):
                 master_dicts.append(t)
             # それ以外の辞書のうち略語判定のみに使用
             elif any(x in [91945] for x in t['authors']):
                 optional_dicts.append(t)
 
-        score, misspelling = get_abbreviation_glosbe_score(word, master_dicts)
+        score, misspelling = get_abbreviation_glosbe_score(word, master_dicts, optional_dicts)
         if score < 0:
             add_abbreviation('glosbe', word)
             return DictResult.Abbreviation
 
-        if not has_ja and score < 5:
-            for t in optional_dicts:
-                if check_abbreviation_glosbe_tuc(word, t) < 0:
-                    add_abbreviation('glosbe', word)
-                    return DictResult.Abbreviation
+        #if not has_ja and score < 5:
+        #    for t in optional_dicts:
+        #        if check_abbreviation_glosbe_tuc(word, t) < 0:
+        #            add_abbreviation('glosbe', word)
+        #            return DictResult.Abbreviation
         if len(master_dicts) > 0:
             add_cache('glosbe', word)
             return DictResult.Found
