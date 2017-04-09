@@ -498,7 +498,11 @@ def has_glosbe_ja_meaings_or_phrase(t):
     return False
 
 
-def _check_suspicion_glosbe_impl(word, translate_word):
+def _check_suspicion_glosbe_impl(word, translate_word=None):
+    check_case = False
+    if translate_word is None:
+        check_case = True
+        translate_word = word
     r = Glosbe.Translate(translate_word, Glosbe.EN, Glosbe.JA)
     if r['result'] == 'ok':
         tuc = r['tuc']
@@ -534,7 +538,7 @@ def _check_suspicion_glosbe_impl(word, translate_word):
             return DictResult.Found
         if misspelling:
             return DictResult.Misspelling
-        if has_ja:
+        if has_ja and check_case:
             # case sensitive なので先頭を大文字にしてリトライ
             return _check_suspicion_glosbe_impl(word, (word[0]).upper() + word[1:])
     return DictResult.NotFound
@@ -542,7 +546,7 @@ def _check_suspicion_glosbe_impl(word, translate_word):
 
 def check_suspicion_glosbe_impl(word):
     try:
-        return _check_suspicion_glosbe_impl(word, word)
+        return _check_suspicion_glosbe_impl(word)
     except requests.HTTPError as e:
         print("Http error:", e.message)
         if e.response.status_code == 429:
