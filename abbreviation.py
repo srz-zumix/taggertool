@@ -340,6 +340,11 @@ def parse_command_line():
         action='store_true',
         help=argparse.SUPPRESS
     )
+    parser.add_argument(
+        '--report-notfound-only',
+        action='store_true',
+        help=argparse.SUPPRESS
+    )
     options = parser.parse_args()
     return options, parser
 
@@ -412,7 +417,7 @@ def check_abbreviation_glosbe(word, d):
         # 末尾の . を削除
         text = text.rstrip('.')
         # タグを削除
-        for tag in ['i']:
+        for tag in ['i', 'b']:
             text = text.replace('<'  + tag + '>', '')
             text = text.replace('</' + tag + '>', '')
             text = text.replace('['  + tag + ']', '')
@@ -436,27 +441,30 @@ def check_abbreviation_glosbe(word, d):
                     return 2
                 return -5
         else:
+            def check_short_of(starts):
+                if text.startswith(starts):
+                    after = text[len(starts):]
+                    after_words = after.split(',')[0].split()
+                    if len(after_words) > 1:
+                        if not after_words[0].startswith(word):
+                            return True
+                    else:
+                        if word not in after_words:
+                            return True
+                return False
+
             # XXX の略語って意味はダメ
-            if text.startswith('abbreviation of'):
-                if not text.startswith('abbreviation of ' + word + ' '):
-                    return -5
-            if text.startswith('abbreviation for'):
-                if not text.startswith('abbreviation for ' + word + ' '):
-                    return -5
-            if text.startswith('short for'):
-                if not text.startswith('short for ' + word + ' '):
-                    return -5
-            if text.startswith('short from for'):
-                if not text.startswith('short from for ' + word + ' '):
-                    return -5
-            if text.startswith('shortened form of'):
-                if not text.startswith('shortened form of ' + word + ' '):
-                    return -5
-            if text.startswith('clipped form of'):
-                if not text.startswith('clipped form of ' + word + ' '):
-                    return -5
-            if text.startswith('alternative from of'):
-                if not text.startswith('alternative from of ' + word + ' '):
+            short_of_starts = [
+                'abbreviation of',
+                'abbreviation for',
+                'short for',
+                'short from for',
+                'shortened form of',
+                'clipped form of',
+                'alternative from of',
+            ]
+            for ss in short_of_starts:
+                if check_short_of(ss):
                     return -5
             # misspelling
             if text.startswith('misspelling of'):
@@ -940,7 +948,8 @@ def check(f, report_in_line):
                     for d in detected_words:
                         word = d['word']
                         result = d['result']
-                        print(make_warning_message(result, word))
+                        if (not options.report_notfound_only) or (result == DictResult.NotFound):
+                            print(make_warning_message(result, word))
         line_count += 1
         line = f.readline()
         if options.progress and not report_in_line:
@@ -974,17 +983,19 @@ def printresult():
     if options.list_all:
         for k,v in sorted(words.items(), key=lambda x: len(x[1])):
             r = v.result
-            for location in v.locations:
-                print(make_base_message(location, r, k))
+            if (not options.report_notfound_only) or (r == DictResult.NotFound):
+                for location in v.locations:
+                    print(make_base_message(location, r, k))
     else:
         for k,v in sorted(words.items(), key=lambda x: x[0]):
             r = v.result
-            location = v.locations[0]
-            msg = make_base_message(location, r, k)
-            if len(v.locations) > 1:
-                print("{0} ({1})".format(msg, len(v.locations)))
-            else:
-                print(msg)
+            if (not options.report_notfound_only) or (r == DictResult.NotFound):
+                location = v.locations[0]
+                msg = make_base_message(location, r, k)
+                if len(v.locations) > 1:
+                    print("{0} ({1})".format(msg, len(v.locations)))
+                else:
+                    print(msg)
         print("Total number detected: {0}".format(len(words)))
 
 
