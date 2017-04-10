@@ -393,83 +393,90 @@ def is_spell_diff_word(word1, word2):
 
 
 r_glosbe_tag = re.compile('^\(([a-zA-Z,\s]*)\)(.*)')
+def check_abbreviation_glosbe_en(word, d):
+    text = d['text'].lower()
+    # タグから除外
+    m = r_glosbe_tag.match(text)
+    if m:
+        text = m.group(2).strip()
+        for tag in m.group(1).split(','):
+            if tag in ['online gaming', 'internet']:
+                return 10
+            if tag in ['programing', 'computing']:
+                return 20
+            elif tag in ['informal', 'colloquial abbreviation']:
+                desc = m.group(2).lower().strip()
+                if re.match('^(a\s|)' + word + '\w', desc):
+                    return -5
+    # 先頭の 'A ', 'An ' を取り除く
+    if text.startswith('a '):
+        text = text[2:]
+    if text.startswith('an '):
+        text = text[3:]
+    # 末尾の . を削除
+    text = text.rstrip('.')
+    # タグを削除
+    for tag in ['i', 'b']:
+        text = text.replace('<'  + tag + '>', '')
+        text = text.replace('</' + tag + '>', '')
+        text = text.replace('['  + tag + ']', '')
+        text = text.replace('[/' + tag + ']', '')
+    # 完全一致したら略語じゃない
+    if text == word:
+        return 2
+    # 一単語のみの場合
+    if len(text.split()) == 1:
+        # ゴミ？
+        if 'dust' == text:
+            return -1
+        # 前方一致した場合は略語と判定
+        if text.startswith(word):
+            diff = len(text) - len(word)
+            # 過去形だったら略語じゃない
+            if text[-2:] == 'ed' and diff < 3:
+                return 2
+            # 形容詞だったら略語じゃない
+            if text[-2:] == 'ly' and diff == 2:
+                return 2
+            return -5
+    else:
+        def check_short_of(starts):
+            if text.startswith(starts):
+                after = text[len(starts):]
+                after_words = after.split(',')[0].split()
+                if len(after_words) == 1:
+                    if not after_words[0].startswith(word):
+                        return True
+                else:
+                    if word not in after_words:
+                        return True
+            return False
+
+        # XXX の略語って意味はダメ
+        short_of_starts = [
+            'abbreviation of',
+            'abbreviation for',
+            'short for',
+            'short from for',
+            'shortened form of',
+            'clipped form of',
+            'alternative from of',
+        ]
+        for ss in short_of_starts:
+            if check_short_of(ss):
+                return -5
+        # misspelling
+        if text.startswith('misspelling of'):
+            raise MisspellingError
+    return 1
+
+
 def check_abbreviation_glosbe(word, d):
     if d['language'] == Glosbe.EN:
-        text = d['text'].lower()
-        # タグから除外
-        m = r_glosbe_tag.match(text)
-        if m:
-            text = m.group(2).strip()
-            for tag in m.group(1).split(','):
-                if tag in ['online gaming', 'internet']:
-                    return 10
-                if tag in ['programing', 'computing']:
-                    return 20
-                elif tag in ['informal', 'colloquial abbreviation']:
-                    desc = m.group(2).lower().strip()
-                    if re.match('^(a\s|)' + word + '\w', desc):
-                        return -5
-        # 先頭の 'A ', 'An ' を取り除く
-        if text.startswith('a '):
-            text = text[2:]
-        if text.startswith('an '):
-            text = text[3:]
-        # 末尾の . を削除
-        text = text.rstrip('.')
-        # タグを削除
-        for tag in ['i', 'b']:
-            text = text.replace('<'  + tag + '>', '')
-            text = text.replace('</' + tag + '>', '')
-            text = text.replace('['  + tag + ']', '')
-            text = text.replace('</' + tag + ']', '')
-        # 完全一致したら略語じゃない
-        if text == word:
-            return 2
-        # 一単語のみの場合
-        if len(text.split()) == 1:
-            # ゴミ？
-            if 'dust' == text:
-                return -1
-            # 前方一致した場合は略語と判定
-            if text.startswith(word):
-                diff = len(text) - len(word)
-                # 過去形だったら略語じゃない
-                if text[-2:] == 'ed' and diff < 3:
-                    return 2
-                # 形容詞だったら略語じゃない
-                if text[-2:] == 'ly' and diff == 2:
-                    return 2
-                return -5
-        else:
-            def check_short_of(starts):
-                if text.startswith(starts):
-                    after = text[len(starts):]
-                    after_words = after.split(',')[0].split()
-                    if len(after_words) > 1:
-                        if not after_words[0].startswith(word):
-                            return True
-                    else:
-                        if word not in after_words:
-                            return True
-                return False
-
-            # XXX の略語って意味はダメ
-            short_of_starts = [
-                'abbreviation of',
-                'abbreviation for',
-                'short for',
-                'short from for',
-                'shortened form of',
-                'clipped form of',
-                'alternative from of',
-            ]
-            for ss in short_of_starts:
-                if check_short_of(ss):
-                    return -5
-            # misspelling
-            if text.startswith('misspelling of'):
-                raise MisspellingError
-    return 1
+        return check_abbreviation_glosbe_en(word, d)
+    elif d['language'] == Glosbe.JA:
+        return 2
+    return 0
 
 
 def check_abbreviation_glosbe_tuc(word, t):
