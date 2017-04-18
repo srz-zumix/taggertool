@@ -161,6 +161,9 @@ class MisspellingError(Exception):
     pass
 
 
+class IgnoreError(Exception):
+    pass
+
 class DictResult:
     Found = 0
     NoCheck = 1
@@ -206,7 +209,7 @@ def parse_command_line():
         '-v',
         '--version',
         action='version',
-        version=u'%(prog)s version 0.2'
+        version=u'%(prog)s version 0.3'
     )
     parser.add_argument(
         '-g',
@@ -392,22 +395,13 @@ def is_spell_diff_word(word1, word2):
     return False
 
 
-r_glosbe_tag = re.compile('^\(([a-zA-Z,\s]*)\)(.*)')
-def check_abbreviation_glosbe_en(word, d):
-    text = d['text'].lower()
-    # タグから除外
-    m = r_glosbe_tag.match(text)
-    if m:
-        text = m.group(2).strip()
-        for tag in m.group(1).split(','):
-            if tag in ['online gaming', 'internet']:
-                return 10
-            if tag in ['programing', 'computing']:
-                return 20
-            elif tag in ['informal', 'colloquial abbreviation']:
-                desc = m.group(2).lower().strip()
-                if re.match('^(a\s|)' + word + '\w', desc):
-                    return -5
+def normalize_dict_text(text):
+    # タグを削除
+    for tag in ['i', 'b', 'sup']:
+        text = text.replace('<'  + tag + '>', '')
+        text = text.replace('</' + tag + '>', '')
+        text = text.replace('['  + tag + ']', '')
+        text = text.replace('[/' + tag + ']', '')
     # 先頭の 'A ', 'An ' を取り除く
     if text.startswith('a '):
         text = text[2:]
@@ -415,15 +409,50 @@ def check_abbreviation_glosbe_en(word, d):
         text = text[3:]
     # 末尾の . を削除
     text = text.rstrip('.')
-    # タグを削除
-    for tag in ['i', 'b']:
-        text = text.replace('<'  + tag + '>', '')
-        text = text.replace('</' + tag + '>', '')
-        text = text.replace('['  + tag + ']', '')
-        text = text.replace('[/' + tag + ']', '')
+    # ; 以降は除外
+    text = text.split(';')[0]
+    return text
+
+
+r_glosbe_tag = re.compile('^\(([a-zA-Z,\s]*)\)(.*)')
+r_cockney_slang = re.compile('.*slang.*\[from [0-9]+th c\.\].*')
+def check_abbreviation_glosbe_en(word, d, adict, optional):
+    text = d['text'].lower()
+    # タグから除外
+    m = r_glosbe_tag.match(text)
+    if m:
+        text = m.group(2).strip()
+    text = normalize_dict_text(text)
+    # 整形したテキストを保存しておく
+    if not optional:
+        adict.append(text)
+
+    find_value = 1
+
+    # タグをチェック
+    if m:
+        for tag in m.group(1).split(','):
+            tag = tag.strip()
+            if tag in ['online gaming', 'internet']:
+                find_value = 3
+            if tag in ['programing', 'computing']:
+                return 20
+            if tag in ['informal', 'colloquial abbreviation']:
+                desc = m.group(2).lower().strip()
+                if re.match('^(a\s|)' + word + '\w', desc):
+                    return -5
+            if tag in ['obsolete', 'cockney rhyming slang', 'slang']:
+                # slang/obsolete は除外
+                raise IgnoreError
+    # cockney rhyming slang
+    if r_cockney_slang.match(text):
+        raise IgnoreError
     # 完全一致したら略語じゃない
     if text == word:
-        return 2
+        return find_value * 2
+    # 補助辞書の場合は同一文はチェックしない
+    if optional and text in adict:
+        return 0
     # 一単語のみの場合
     if len(text.split()) == 1:
         # ゴミ？
@@ -434,20 +463,20 @@ def check_abbreviation_glosbe_en(word, d):
             diff = len(text) - len(word)
             # 過去形だったら略語じゃない
             if text[-2:] == 'ed' and diff < 3:
-                return 2
+                return find_value * 2
             # 形容詞だったら略語じゃない
             if text[-2:] == 'ly' and diff == 2:
-                return 2
+                return find_value * 2
             return -5
     else:
         def check_short_of(starts):
             if text.startswith(starts):
                 after = text[len(starts):]
-                after_words = after.split(',')[0].split()
+                after_words = re.split(',|:', after)[0].split()
                 if len(after_words) == 1:
-                    if not after_words[0].startswith(word):
-                        return True
+                    return True
                 else:
+                    # 文中に word がない場合は略語と判定
                     if word not in after_words:
                         return True
             return False
@@ -456,54 +485,62 @@ def check_abbreviation_glosbe_en(word, d):
         short_of_starts = [
             'abbreviation of',
             'abbreviation for',
+            'abbreviated form of',
             'short for',
             'short from for',
             'shortened form of',
             'clipped form of',
             'alternative from of',
+            'eye dialect spelling of'
         ]
         for ss in short_of_starts:
             if check_short_of(ss):
                 return -5
         # misspelling
-        if text.startswith('misspelling of'):
+        if 'misspelling of' in text:
             raise MisspellingError
-    return 1
+    return find_value
 
 
-def check_abbreviation_glosbe(word, d):
+def check_abbreviation_glosbe(word, d, adict, optional):
     if d['language'] == Glosbe.EN:
-        return check_abbreviation_glosbe_en(word, d)
+        return check_abbreviation_glosbe_en(word, d, adict, optional)
     elif d['language'] == Glosbe.JA:
         return 2
     return 0
 
 
-def check_abbreviation_glosbe_tuc(word, t):
+def check_abbreviation_glosbe_tuc(word, t, adict, optional):
     if 'meanings' in t:
         for meaning in t['meanings']:
-            return check_abbreviation_glosbe(word, meaning)
+            return check_abbreviation_glosbe(word, meaning, adict, optional)
     elif 'phrase' in t:
-        return check_abbreviation_glosbe(word, t['phrase'])
+        return check_abbreviation_glosbe(word, t['phrase'], adict, optional)
     return 0
 
 
 def get_abbreviation_glosbe_score(word, tuc, optional_tuc):
     score = 0
     misspelling = False
-    for t in tuc:
+    adict = []
+    for t in tuc[:]:
         try:
-            rs = check_abbreviation_glosbe_tuc(word, t)
+            rs = check_abbreviation_glosbe_tuc(word, t, adict, False)
             score += rs
+        except IgnoreError:
+            tuc.remove(t)
         except MisspellingError:
             misspelling = True
+            tuc.remove(t)
         except:
             raise
     for t in optional_tuc:
         try:
-            rs = check_abbreviation_glosbe_tuc(word, t)
+            rs = check_abbreviation_glosbe_tuc(word, t, adict, True)
             if rs < 0:
                 score += rs
+        except IgnoreError:
+            pass
         except MisspellingError:
             misspelling = True
         except:
@@ -552,6 +589,9 @@ def _check_suspicion_glosbe_impl(word, translate_word=None):
             add_abbreviation('glosbe', word)
             return DictResult.Abbreviation
 
+        if misspelling:
+            return DictResult.Misspelling
+
         #if not has_ja and score < 5:
         #    for t in optional_dicts:
         #        if check_abbreviation_glosbe_tuc(word, t) < 0:
@@ -560,8 +600,6 @@ def _check_suspicion_glosbe_impl(word, translate_word=None):
         if len(master_dicts) > 0:
             add_cache('glosbe', word)
             return DictResult.Found
-        if misspelling:
-            return DictResult.Misspelling
         if has_ja and check_case:
             # case sensitive なので先頭を大文字にしてリトライ
             return _check_suspicion_glosbe_impl(word, (word[0]).upper() + word[1:])
@@ -862,7 +900,7 @@ def checkword(word, filepath, line, detected_words):
     global checked_words
     if not word in checked_words:
         location = Location(filepath, line)
-        if words.has_key(word):
+        if word in words:
             words[word].add_location(location)
             detected_words.append({'word': word, 'location': location, 'result': words[word].result})
         else:

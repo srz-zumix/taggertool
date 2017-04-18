@@ -9,7 +9,10 @@ import unicodedata
 
 import keywords
 
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except:
+    from io import StringIO
 
 class FileReader(object):
     Keywords = []

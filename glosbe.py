@@ -99,5 +99,5 @@ if __name__ == '__main__':
     else:
         r = g.translate('test')
     pprint.pprint(r)
-    print g.get_meanings(r)
-    print g.get_phrases(r)
+    print(g.get_meanings(r))
+    print(g.get_phrases(r))
