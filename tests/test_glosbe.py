@@ -17,6 +17,8 @@ class Test_glosbe(unittest.TestCase):
 
     def test_found(self):
         words = [
+            'pythagoras',
+            'block',
             'posit',
             ]
         for word in words:

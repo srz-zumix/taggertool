@@ -395,6 +395,7 @@ def is_spell_diff_word(word1, word2):
     return False
 
 
+r_html_special_char = re.compile('&[#|\w]+;')
 def normalize_dict_text(text):
     # タグを削除
     for tag in ['i', 'b', 'sup']:
@@ -402,6 +403,8 @@ def normalize_dict_text(text):
         text = text.replace('</' + tag + '>', '')
         text = text.replace('['  + tag + ']', '')
         text = text.replace('[/' + tag + ']', '')
+    # html 特殊文字削除
+    text = r_html_special_char.sub('', text)
     # 先頭の 'A ', 'An ' を取り除く
     if text.startswith('a '):
         text = text[2:]
@@ -491,6 +494,7 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
             'shortened form of',
             'clipped form of',
             'alternative from of',
+            'alternative spelling of',
             'eye dialect spelling of'
         ]
         for ss in short_of_starts:
@@ -589,7 +593,7 @@ def _check_suspicion_glosbe_impl(word, translate_word=None):
             add_abbreviation('glosbe', word)
             return DictResult.Abbreviation
 
-        if misspelling:
+        if misspelling and score < 10:
             return DictResult.Misspelling
 
         #if not has_ja and score < 5:
