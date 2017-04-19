@@ -158,7 +158,6 @@ something
 value
 cast
 least
-min
 fit
 link
 skipped
@@ -657,7 +656,6 @@ prams
 adapter
 menu
 popup
-wid
 submenu
 mediator
 once
@@ -1494,7 +1492,6 @@ adaptive
 ask
 dropdown
 animation
-ole
 built
 shortcut
 accessible
@@ -1683,7 +1680,6 @@ tildes
 ant
 unsuccessfully
 blah
-miny
 moe
 pets
 dog
@@ -1731,7 +1727,6 @@ polymorphic
 monomorphic
 payload
 implicit
-proto
 cardinalities
 cardinality
 conservative
@@ -1825,7 +1820,6 @@ against
 relational
 could
 arithmetical
-ast
 dereference
 forgotten
 modification
@@ -2339,7 +2333,6 @@ absent
 tinyness
 imin
 dig
-thru
 then
 choice
 ace
@@ -2457,7 +2450,6 @@ incoming
 outgoing
 corresponds
 soo
-cit
 occupied
 defensive
 spikes
@@ -2955,7 +2947,6 @@ limitation
 decoration
 decor
 rex
-ident
 frontend
 asynchronous
 met
@@ -3131,3 +3122,4 @@ artefact
 cases
 topic
 introspection
+posit
