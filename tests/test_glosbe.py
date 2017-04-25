@@ -54,13 +54,14 @@ class Test_glosbe(unittest.TestCase):
 
     def test_abbreviation(self):
         words = [
-            'vid',
             'abs',
             'chk',
             'min',
             'max',
             'neg',
+            'sig',
             'semi',
+            'vid',
             ]
         for word in words:
             self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe(word), word)

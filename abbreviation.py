@@ -478,7 +478,7 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
             if text.startswith(starts):
                 if ',' in text:
                     first = text.split(',')[0]
-                    if any([s.startswith(first) for s in adict]):
+                    if any([s.startswith(first) for s in adict[:-1]]):
                         # , を除いたテキストがあったら除外する
                         raise IgnoreError
                 after = text[len(starts):]
