@@ -15,11 +15,39 @@ class Test_glosbe(unittest.TestCase):
     def test_again(self):
         self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('again'))
 
+#    def test_they(self):
+#        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('they'))
+
+    def test_their(self):
+        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('their'))
+
+    # test \u2019
+    def test_your(self):
+        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('your'))
+
+    def test_tramp(self):
+        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('tramp'))
+
+    @unittest.skip('wip')
+    def test_topic(self):
+        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('topic'))
+
     def test_found(self):
         words = [
-            'pythagoras',
+#            'allocation',
+#            'pot',
+#            'repository',
+            'role',
+            'begin',
             'block',
+            'compliment',
+            'pat',
             'posit',
+            'pythagoras',
+            'rule',
+            'runtime',
+            'team',
+            'teardown',
             ]
         for word in words:
             self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe(word), word)
@@ -37,6 +65,14 @@ class Test_glosbe(unittest.TestCase):
         for word in words:
             self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe(word), word)
 
+    def test_found_else(self):
+        words = [
+            'gis',
+            'pos',
+            ]
+        for word in words:
+            self.assertNotEqual(DictResult.Found, abbreviation.check_suspicion_glosbe(word), word)
+
     def test_abbreviation_or_notfound(self):
         words = [
             'pos',
@@ -48,6 +84,8 @@ class Test_glosbe(unittest.TestCase):
     def test_misspelling(self):
         words = [
             'usefull',
+            'extention',
+            'repetetive',
             ]
         for word in words:
             self.assertEqual(DictResult.Misspelling, abbreviation.check_suspicion_glosbe(word), word)
@@ -61,7 +99,13 @@ class Test_glosbe(unittest.TestCase):
     @unittest.skip('Response is unstable')
     def test_2736(self):
         words = [
+            'cannot',
+            'disallow',
+            'insensitive',
             'mathematical',
+            'progress',
+            'resume',
+            'subject',
             'useful',
             ]
         for word in words:

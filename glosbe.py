@@ -94,6 +94,7 @@ class Glosbe:
 if __name__ == '__main__':
     #sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
     g = Glosbe()
+    #g.set_to_lang(Glosbe.EN)
     if len(sys.argv) > 1:
         r = g.translate(sys.argv[1])
     else:
@@ -101,3 +102,4 @@ if __name__ == '__main__':
     pprint.pprint(r)
     print(g.get_meanings(r))
     print(g.get_phrases(r))
+    print(len(r['tuc']))

@@ -5,6 +5,7 @@ import os
 import sys
 
 commonwords =  [ 'alpha'
+                , 'ascii'
                 , 'beta'
                 , 'cygwin'
                 , 'copyright'

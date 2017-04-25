@@ -608,7 +608,6 @@ directory
 root
 absolute
 extension
-extention
 folder
 recursively
 kern
@@ -622,7 +621,6 @@ unrecognized
 containing
 star
 notifier
-ascii
 response
 initial
 notify
@@ -708,7 +706,6 @@ query
 save
 security
 install
-eff
 span
 huge
 flush
@@ -1797,7 +1794,6 @@ database
 assignment
 across
 example
-they
 worst
 way
 side
@@ -2104,7 +2100,6 @@ appropriate
 atomic
 apache
 accumulators
-ean
 accumulator
 referent
 droppable
@@ -2129,7 +2124,6 @@ quantiles
 cell
 quantile
 probability
-probs
 quadratic
 kurtosis
 moment
@@ -2412,7 +2406,6 @@ fused
 procedure
 invocation
 deduce
-repetetive
 operators
 arena
 segs
@@ -2520,7 +2513,6 @@ closest
 neighbours
 post
 polyline
-gis
 multipoint
 parenthesis
 much
