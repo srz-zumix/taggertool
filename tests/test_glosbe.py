@@ -28,7 +28,6 @@ class Test_glosbe(unittest.TestCase):
     def test_tramp(self):
         self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('tramp'))
 
-    @unittest.skip('wip')
     def test_topic(self):
         self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('topic'))
 
@@ -46,6 +45,7 @@ class Test_glosbe(unittest.TestCase):
             'pythagoras',
             'rule',
             'runtime',
+            'stage',
             'team',
             'teardown',
             ]
@@ -59,6 +59,8 @@ class Test_glosbe(unittest.TestCase):
             'min',
             'max',
             'neg',
+            'sec',
+            'seg',
             'sig',
             'semi',
             'vid',
@@ -91,13 +93,6 @@ class Test_glosbe(unittest.TestCase):
         for word in words:
             self.assertEqual(DictResult.Misspelling, abbreviation.check_suspicion_glosbe(word), word)
 
-    def test_no_support_dict_word(self):
-        words = [
-            ]
-        for word in words:
-            self.assertEqual(DictResult.NotFound, abbreviation.check_suspicion_glosbe(word), word)
-
-    @unittest.skip('Response is unstable')
     def test_2736(self):
         words = [
             'cannot',

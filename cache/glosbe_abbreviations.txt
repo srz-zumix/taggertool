@@ -1,3 +1,6 @@
+den
+pseudo
+pub
 min
 wid
 ole
@@ -14,7 +17,6 @@ trans
 trig
 vert
 lit
-plural
 sub
 seg
 elt

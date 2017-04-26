@@ -2040,7 +2040,6 @@ haystack
 needle
 prepend
 allocation
-stdin
 ineffective
 consecutive
 emptiness
@@ -2205,7 +2204,6 @@ adaptable
 steady
 monotonic
 microseconds
-den
 evenly
 divisible
 interprocess
@@ -2254,7 +2252,6 @@ nat
 blocklist
 piecewise
 emulation
-pseudo
 recycling
 leftmost
 contiguous
@@ -2390,7 +2387,6 @@ mop
 propagation
 conformant
 floats
-exp
 subnormal
 specialize
 adapt
@@ -2863,7 +2859,6 @@ localizable
 optimally
 filtering
 intern
-pub
 pipeline
 restriction
 delegate
@@ -3115,3 +3110,4 @@ cases
 topic
 introspection
 posit
+plural
