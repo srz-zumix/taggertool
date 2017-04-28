@@ -1,5 +1,6 @@
-den
-pseudo
+dele
+rel
+chan
 pub
 min
 wid
@@ -9,7 +10,6 @@ proto
 ast
 thru
 cit
-ident
 abs
 neg
 gee
@@ -48,7 +48,6 @@ ext
 config
 mini
 ret
-pos
 info
 sys
 gen

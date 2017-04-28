@@ -28,21 +28,30 @@ class Test_glosbe(unittest.TestCase):
     def test_tramp(self):
         self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('tramp'))
 
+    # 単語での略語判定スコアの調整
     def test_topic(self):
         self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('topic'))
 
+    # 2単語チェックの対応が必要
+    def test_pub(self):
+        self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('pub'))
+
+    # archaic
+    def test_vert(self):
+        self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('vert'))
+
     def test_found(self):
         words = [
-#            'allocation',
-#            'pot',
-#            'repository',
-            'role',
+            'acorn',
+            'allocation',
             'begin',
             'block',
             'compliment',
             'pat',
             'posit',
             'pythagoras',
+            'repository',
+            'role',
             'rule',
             'runtime',
             'stage',
@@ -54,6 +63,7 @@ class Test_glosbe(unittest.TestCase):
 
     def test_abbreviation(self):
         words = [
+            'par',
             'abs',
             'chk',
             'min',
