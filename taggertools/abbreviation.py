@@ -412,10 +412,10 @@ def normalize_dict_text(text):
         text = text[3:]
     # \u2019 (right single quartation) replact
     text = text.replace(r'\u2019', '\'')
-    # 末尾の . を削除
-    text = text.rstrip('.')
+    # 末尾の . ; を削除
+    text = text.rstrip('.;')
     # ; 以降は除外
-    text = text.split(';')[0]
+    #text = text.split(';')[0]
     return text
 
 
@@ -425,8 +425,11 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
     text = d['text'].lower()
     # タグから除外
     m = r_glosbe_tag.match(text)
+    tags = []
     if m:
         text = m.group(2).strip()
+        tags = m.group(1).split(',')
+
     text = normalize_dict_text(text)
     # 同一文はチェックしない
     if text in adict:
@@ -438,41 +441,57 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
     find_value = 1
 
     # タグをチェック
-    if m:
-        for tag in m.group(1).split(','):
-            tag = tag.strip()
-            if tag in ['online gaming', 'internet']:
-                find_value = 3
-            if tag in ['programing', 'computing']:
-                return 20
-            if tag in ['informal', 'colloquial abbreviation']:
-                desc = m.group(2).lower().strip()
-                if re.match('^(a\s|)' + word + '\w', desc):
-                    return -5
-            if tag in ['obsolete', 'cockney rhyming slang', 'slang', 'nonstandard']:
-                # slang/obsolete は除外
-                raise IgnoreError
+    for tag in tags:
+        tag = tag.strip()
+        if tag in ['online gaming', 'internet']:
+            find_value = 3
+        if tag in ['programing', 'computing']:
+            return 20
+        if tag in ['informal', 'colloquial abbreviation']:
+            desc = m.group(2).lower().strip()
+            if re.match('^(a\s|)' + word + '\w', desc):
+                return -5
+        if tag in ['obsolete', 'cockney rhyming slang', 'slang', 'nonstandard', 'archaic', 'mostly uncountable']:
+            # スラング or すたれた ものは除外
+            raise IgnoreError
+        if tag in ['of champagne', 'golf']:
+            # その他、品種で除外
+            raise IgnoreError
     # cockney rhyming slang
     if r_cockney_slang.match(text):
         raise IgnoreError
-    # 完全一致したら略語じゃない
-    if text == word:
-        return find_value * 2
-    # 一単語のみの場合
-    if len(text.split()) == 1:
-        # ゴミ？
-        if 'dust' == text:
-            return -1
+    if text.startswith('spanish,'):
+        raise IgnoreError
+
+    def check_one_word(text):
+        # 完全一致したら略語じゃない
+        if text == word:
+            return DictResult.Found
         # 前方一致した場合は略語と判定
         if text.startswith(word):
             diff = len(text) - len(word)
             # 過去形だったら略語じゃない
             if text[-2:] == 'ed' and diff < 3:
-                return find_value * 2
+                return DictResult.Found
             # 形容詞だったら略語じゃない
             if text[-2:] == 'ly' and diff == 2:
+                return DictResult.Found
+            return DictResult.Abbreviation
+        return DictResult.NotFound
+
+
+    # ゴミ？
+    if 'dust' == text:
+        return -1
+    split_texts = re.split('\s|-', text, 3)
+    # 1 or 2単語のみの場合
+    if len(split_texts) <= 2:
+        for oneword in split_texts:
+            r = check_one_word(oneword)
+            if r == DictResult.Found:
                 return find_value * 2
-            return -5
+            elif r == DictResult.Abbreviation:
+                return -4
     else:
         def check_short_of(starts):
             if text.startswith(starts):
@@ -524,6 +543,14 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
 
         if check_misspelling_of('misspelling of'):
             raise MisspellingError
+        # ; 区切りで単語チェック
+        for t in text.split(';'):
+            if len(t.split()) == 1:
+                r = check_one_word(t)
+                if r == DictResult.Found:
+                    return find_value * 2
+                elif r == DictResult.Abbreviation:
+                    return -4
     return find_value
 
 
@@ -565,8 +592,7 @@ def get_abbreviation_glosbe_score(word, tuc, optional_tuc):
         try:
             rs = check_abbreviation_glosbe_tuc(word, t, adict, True)
             if rs < 0:
-                # optional は固定で main より小さい値にする
-                score -= 3
+                score += rs
         except IgnoreError:
             pass
         except MisspellingError:
@@ -598,21 +624,22 @@ def _check_suspicion_glosbe_impl(word, translate_word=None):
         if len(tuc) == 0:
             return DictResult.NotFound
 
-        has_ja = False
+        ja_count = 0
         # 辞書ごとのリストを作成する
         master_dicts = []
         optional_dicts = []
         for t in tuc:
             if has_glosbe_ja_meaings_or_phrase(t):
-                has_ja = True
-            # 1,84,2736 の辞書だけ使う
-            if any(x in [1, 2736] for x in t['authors']):
+                ja_count += 1
+            # 信頼する辞書だけ使う
+            if any(x in [1, 84, 2736, 93369] for x in t['authors']):
                 master_dicts.append(t)
             # それ以外の辞書のうち略語判定のみに使用
             elif any(x in [91945] for x in t['authors']):
                 optional_dicts.append(t)
 
         score, misspelling = get_abbreviation_glosbe_score(word, master_dicts, optional_dicts)
+        score += (int)(ja_count / 10)
         if score < 0:
             add_abbreviation('glosbe', word)
             return DictResult.Abbreviation
@@ -632,7 +659,7 @@ def _check_suspicion_glosbe_impl(word, translate_word=None):
             add_cache('glosbe', word)
             return DictResult.Found
 
-        if has_ja and check_case:
+        if ja_count > 0 and check_case:
             # case sensitive なので先頭を大文字にしてリトライ
             return _check_suspicion_glosbe_impl(word, (word[0]).upper() + word[1:])
     return DictResult.NotFound

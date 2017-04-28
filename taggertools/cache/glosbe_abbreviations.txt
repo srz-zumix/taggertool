@@ -1,3 +1,7 @@
+dele
+rel
+chan
+pub
 min
 wid
 ole
@@ -6,7 +10,6 @@ proto
 ast
 thru
 cit
-ident
 abs
 neg
 gee
@@ -14,7 +17,6 @@ trans
 trig
 vert
 lit
-plural
 sub
 seg
 elt
@@ -46,7 +48,6 @@ ext
 config
 mini
 ret
-pos
 info
 sys
 gen

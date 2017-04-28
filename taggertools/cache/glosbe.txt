@@ -1314,7 +1314,6 @@ large
 playback
 pass
 mail
-dele
 backlog
 workstation
 vista
@@ -2040,7 +2039,6 @@ haystack
 needle
 prepend
 allocation
-stdin
 ineffective
 consecutive
 emptiness
@@ -2055,7 +2053,6 @@ qualification
 cosh
 specifications
 bitfields
-rel
 simplification
 within
 reached
@@ -2205,7 +2202,6 @@ adaptable
 steady
 monotonic
 microseconds
-den
 evenly
 divisible
 interprocess
@@ -2254,7 +2250,6 @@ nat
 blocklist
 piecewise
 emulation
-pseudo
 recycling
 leftmost
 contiguous
@@ -2390,7 +2385,6 @@ mop
 propagation
 conformant
 floats
-exp
 subnormal
 specialize
 adapt
@@ -2544,7 +2538,6 @@ largest
 channel
 bitfield
 gray
-chan
 planar
 nonword
 nondivisible
@@ -2863,7 +2856,6 @@ localizable
 optimally
 filtering
 intern
-pub
 pipeline
 restriction
 delegate
@@ -2992,7 +2984,6 @@ lognormal
 sigma
 students
 triangular
-twothirds
 sixth
 six
 zeta
@@ -3115,3 +3106,7 @@ cases
 topic
 introspection
 posit
+plural
+ident
+den
+pseudo

@@ -31,7 +31,12 @@
     <Compile Include="filereader.py" />
     <Compile Include="glosbe.py" />
     <Compile Include="keywords.py" />
+    <Compile Include="tests\test_glosbe.py" />
+    <Compile Include="tests\__init__.py" />
     <Compile Include="wordsapi.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="tests\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
