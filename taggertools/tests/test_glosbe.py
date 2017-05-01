@@ -25,6 +25,10 @@ class Test_glosbe(unittest.TestCase):
     def test_your(self):
         self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('your'))
 
+    # test \u014b
+    def test_eng(self):
+        self.assertEqual(DictResult.NotFound, abbreviation.check_suspicion_glosbe('eng'))
+
     def test_tramp(self):
         self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('tramp'))
 
@@ -39,6 +43,10 @@ class Test_glosbe(unittest.TestCase):
     # archaic
     def test_vert(self):
         self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('vert'))
+
+    # gen'eration's
+    def test_gens(self):
+        self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('gens'))
 
     def test_found(self):
         words = [
@@ -63,12 +71,12 @@ class Test_glosbe(unittest.TestCase):
 
     def test_abbreviation(self):
         words = [
-            'par',
             'abs',
             'chk',
             'min',
             'max',
             'neg',
+            'par',
             'sec',
             'seg',
             'sig',
@@ -85,6 +93,15 @@ class Test_glosbe(unittest.TestCase):
             ]
         for word in words:
             self.assertNotEqual(DictResult.Found, abbreviation.check_suspicion_glosbe(word), word)
+
+    # need plural word search check
+    def test_plural(self):
+        words = [
+            'certs',
+            'subs',
+            ]
+        for word in words:
+            self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe(word), word)
 
     def test_abbreviation_or_notfound(self):
         words = [

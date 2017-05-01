@@ -164,6 +164,10 @@ class MisspellingError(Exception):
 class IgnoreError(Exception):
     pass
 
+class PluralError(Exception):
+    def __init__(self, word):
+        self.message = word
+
 class DictResult:
     Found = 0
     NoCheck = 1
@@ -454,13 +458,15 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
         if tag in ['obsolete', 'cockney rhyming slang', 'slang', 'nonstandard', 'archaic', 'mostly uncountable']:
             # スラング or すたれた ものは除外
             raise IgnoreError
-        if tag in ['of champagne', 'golf']:
+        if tag in ['of champagne', 'golf', 'anthropology']:
             # その他、品種で除外
             raise IgnoreError
     # cockney rhyming slang
     if r_cockney_slang.match(text):
         raise IgnoreError
     if text.startswith('spanish,'):
+        raise IgnoreError
+    if text.startswith('roman alphabet'):
         raise IgnoreError
 
     def check_one_word(text):
@@ -477,6 +483,10 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
             if text[-2:] == 'ly' and diff == 2:
                 return DictResult.Found
             return DictResult.Abbreviation
+        # 複数系の確認
+        if text[-1:] == 's' and word[-1:] == 's':
+            if text.startswith(word[:-1]):
+                return DictResult.Abbreviation
         return DictResult.NotFound
 
 
@@ -526,6 +536,7 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
         for ss in short_of_starts:
             if check_short_of(ss):
                 return -5
+
         # misspelling
         def check_misspelling_of(starts):
             if text.startswith(starts):
@@ -543,6 +554,24 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
 
         if check_misspelling_of('misspelling of'):
             raise MisspellingError
+
+        # plural
+        def check_plural_of(starts):
+            if text.startswith(starts):
+                after = text[len(starts):]
+                after_words = re.split(',|:', after)[0].split()
+                if len(after_words) == 1:
+                    raise PluralError(after_words[0])
+                else:
+                    raise IgnoreError
+        
+        plural_of_starts = [
+            'plural of',
+            'plural form of',
+        ]
+        for ss in plural_of_starts:
+            check_plural_of(ss)
+
         # ; 区切りで単語チェック
         for t in text.split(';'):
             if len(t.split()) == 1:
@@ -638,7 +667,20 @@ def _check_suspicion_glosbe_impl(word, translate_word=None):
             elif any(x in [91945] for x in t['authors']):
                 optional_dicts.append(t)
 
-        score, misspelling = get_abbreviation_glosbe_score(word, master_dicts, optional_dicts)
+        try:
+            score, misspelling = get_abbreviation_glosbe_score(word, master_dicts, optional_dicts)
+        except PluralError as e:
+            # 複数形だった場合、単数形を辞書で引く
+            # message に単数形が入ってる
+            result = check_suspicion_glosbe_impl(e.message)
+            if e.message + 's' != word:
+                if result == DictResult.Abbreviation:
+                    add_abbreviation('glosbe', word)
+                elif result == DictResult.Found:
+                    add_cache('glosbe', word)
+            return result
+        except:
+            raise
         score += (int)(ja_count / 10)
         if score < 0:
             add_abbreviation('glosbe', word)
@@ -647,11 +689,6 @@ def _check_suspicion_glosbe_impl(word, translate_word=None):
         if misspelling and score < 2:
             return DictResult.Misspelling
 
-        #if not has_ja and score < 5:
-        #    for t in optional_dicts:
-        #        if check_abbreviation_glosbe_tuc(word, t) < 0:
-        #            add_abbreviation('glosbe', word)
-        #            return DictResult.Abbreviation
         if len(master_dicts) > 0:
             add_cache('glosbe', word)
             return DictResult.Found
