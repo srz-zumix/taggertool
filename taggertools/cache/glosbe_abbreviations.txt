@@ -141,3 +141,14 @@ prof
 conf
 diag
 excl
+oct
+ctr
+cmd
+serv
+crit
+bacc
+misc
+svc
+bio
+orl
+pic
