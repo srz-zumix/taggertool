@@ -6,8 +6,7 @@
     <ProjectGuid>c0941dc4-c903-42a8-a47f-bc04d0f5c924</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>abbreviation.py</StartupFile>
-    <SearchPath>
-    </SearchPath>
+    <SearchPath>.</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>abbreviation</Name>

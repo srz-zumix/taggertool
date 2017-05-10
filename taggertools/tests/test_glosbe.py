@@ -29,6 +29,10 @@ class Test_glosbe(unittest.TestCase):
     def test_eng(self):
         self.assertEqual(DictResult.NotFound, abbreviation.check_suspicion_glosbe('eng'))
 
+    # test \uxf6
+    def test_zoa(self):
+        self.assertEqual(DictResult.NotFound, abbreviation.check_suspicion_glosbe('zoa'))
+
     def test_tramp(self):
         self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('tramp'))
 
@@ -44,10 +48,6 @@ class Test_glosbe(unittest.TestCase):
     def test_vert(self):
         self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('vert'))
 
-    # gen'eration's
-    def test_gens(self):
-        self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('gens'))
-
     def test_found(self):
         words = [
             'acorn',
@@ -55,6 +55,7 @@ class Test_glosbe(unittest.TestCase):
             'begin',
             'block',
             'compliment',
+            'kana',
             'pat',
             'posit',
             'pythagoras',
@@ -94,10 +95,27 @@ class Test_glosbe(unittest.TestCase):
         for word in words:
             self.assertNotEqual(DictResult.Found, abbreviation.check_suspicion_glosbe(word), word)
 
+    def test_notfound(self):
+        words = [
+            'bailouts',
+            ]
+        for word in words:
+            self.assertNotEqual(DictResult.Found, abbreviation.check_suspicion_glosbe(word), word)
+
     # need plural word search check
     def test_plural(self):
         words = [
+            'zos',
+            ]
+        for word in words:
+            self.assertEqual(DictResult.NotFound, abbreviation.check_suspicion_glosbe(word), word)
+
+    # gen'eration's
+    def test_plural_abbreviation(self):
+        words = [
             'certs',
+            'gens',
+            'ops',
             'subs',
             ]
         for word in words:

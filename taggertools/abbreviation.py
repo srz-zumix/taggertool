@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os
@@ -145,12 +145,20 @@ class Cache:
         return [ Cache.get_gene_filename(dir, name), Cache.get_abbreviation_filename(dir, name) ]
 
     def add(self, word):
+        if len(word) <= 2:
+            return
+        if word in self.gene:
+            return
         self.gene.append(word)
         if self.gene_file:
             self.gene_file.write(word + '\n')
             self.gene_file.flush()
 
     def add_abbreviation(self, word):
+        if len(word) <= 2:
+            return
+        if word in self.abbreviations:
+            return
         self.abbreviations.append(word)
         if self.abbreviations_file:
             self.abbreviations_file.write(word + '\n')
@@ -371,6 +379,10 @@ def isalphasign(s):
     return r_alphasign.match(s) is not None
 
 
+def isascii(s):
+    return max([ord(char) for char in s]) < 128
+
+
 r_equal_word = re.compile(r'^=([A-Za-z]+)$')
 def get_equalword(s):
     m = r_equal_word.match(s)
@@ -530,8 +542,6 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
             'shortened form of',
             'clipped form of',
             'eye dialect spelling of',
-            #'alternative from of',
-            #'alternative spelling of',
         ]
         for ss in short_of_starts:
             if check_short_of(ss):
@@ -541,7 +551,7 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
         def check_misspelling_of(starts):
             if text.startswith(starts):
                 after = text[len(starts):]
-                after_words = re.split(',|:', after)[0].split()
+                after_words = re.split(',|:\-', after)[0].split()
                 join_text = ''.join(after_words)
                 # 連結して word と一致する場合はスペルミスと判断しない
                 if join_text != word:
@@ -555,6 +565,20 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
         if check_misspelling_of('misspelling of'):
             raise MisspellingError
 
+        # XXX の代用は無視
+        def check_alternative_of(starts):
+            return check_misspelling_of(starts)
+
+        alternative_of_starts = [
+            'alternative from of',
+            'alternative spelling of',
+        ]
+        for ss in alternative_of_starts:
+            if check_alternative_of(ss):
+                raise IgnoreError
+        if text.startswith('alternative letter-case form of'):
+            return -2
+
         # plural
         def check_plural_of(starts):
             if text.startswith(starts):
@@ -564,10 +588,11 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
                     raise PluralError(after_words[0])
                 else:
                     raise IgnoreError
-        
+
         plural_of_starts = [
             'plural of',
             'plural form of',
+            'singular form of',
         ]
         for ss in plural_of_starts:
             check_plural_of(ss)
@@ -602,7 +627,7 @@ def check_abbreviation_glosbe_tuc(word, t, adict, optional):
     return 0
 
 
-def get_abbreviation_glosbe_score(word, tuc, optional_tuc):
+def get_abbreviation_glosbe_score(word, tuc, optional_tuc, plurals):
     score = 0
     misspelling = False
     adict = []
@@ -612,6 +637,10 @@ def get_abbreviation_glosbe_score(word, tuc, optional_tuc):
             score += rs
         except IgnoreError:
             tuc.remove(t)
+        except PluralError as e:
+            tuc.remove(t)
+            if e.message not in plurals:
+                plurals.append(e.message)
         except MisspellingError:
             misspelling = True
             tuc.remove(t)
@@ -624,6 +653,9 @@ def get_abbreviation_glosbe_score(word, tuc, optional_tuc):
                 score += rs
         except IgnoreError:
             pass
+        except PluralError as e:
+            if e.message not in plurals:
+                plurals.append(e.message)
         except MisspellingError:
             misspelling = True
         except:
@@ -644,6 +676,8 @@ def has_glosbe_ja_meaings_or_phrase(t):
 
 def _check_suspicion_glosbe_impl(word, translate_word=None):
     check_case = False
+    if not isascii(word):
+        return DictResult.NoCheck
     if translate_word is None:
         check_case = True
         translate_word = word
@@ -667,20 +701,29 @@ def _check_suspicion_glosbe_impl(word, translate_word=None):
             elif any(x in [91945] for x in t['authors']):
                 optional_dicts.append(t)
 
-        try:
-            score, misspelling = get_abbreviation_glosbe_score(word, master_dicts, optional_dicts)
-        except PluralError as e:
+        plurals = []
+        score, misspelling = get_abbreviation_glosbe_score(word, master_dicts, optional_dicts, plurals)
+        for plural in plurals:
+            if plural == word:
+                continue
             # 複数形だった場合、単数形を辞書で引く
-            # message に単数形が入ってる
-            result = check_suspicion_glosbe_impl(e.message)
-            if e.message + 's' != word:
-                if result == DictResult.Abbreviation:
-                    add_abbreviation('glosbe', word)
-                elif result == DictResult.Found:
-                    add_cache('glosbe', word)
-            return result
-        except:
-            raise
+            result = check_suspicion_glosbe_impl(plural)
+            if result == DictResult.Abbreviation:
+                if plural + 's' == word:
+                    return DictResult.Abbreviation
+                else:
+                    socre -= 5
+            elif result == DictResult.Found:
+                if plural + 's' == word:
+                    return DictResult.Found
+                else:
+                    score += 1
+            elif result == DictResult.NotFound:
+                pass
+            elif result == DictResult.NoCheck:
+                pass
+            else:
+                score -= 3
         score += (int)(ja_count / 10)
         if score < 0:
             add_abbreviation('glosbe', word)

@@ -1,3 +1,11 @@
+ref
+paren
+doc
+perm
+seg
+rep
+util
+int
 dele
 rel
 chan
@@ -18,7 +26,6 @@ trig
 vert
 lit
 sub
-seg
 elt
 sec
 iso
@@ -52,8 +59,6 @@ info
 sys
 gen
 def
-ref
-util
 sep
 obj
 comp
@@ -64,15 +69,12 @@ ortho
 temp
 ceil
 ave
-perm
 hyper
 cert
-rep
 intro
 rev
 auto
 unc
-percent
 par
 symmetric
 san
@@ -81,7 +83,6 @@ str
 amp
 mag
 exam
-doc
 lang
 quad
 msg
@@ -90,7 +91,6 @@ rec
 prob
 tic
 sig
-paren
 cal
 lib
 dec
@@ -116,7 +116,6 @@ meth
 opp
 vis
 coord
-ins
 stats
 rit
 rad
