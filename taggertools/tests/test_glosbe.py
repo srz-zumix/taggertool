@@ -1,4 +1,4 @@
-﻿import unittest
+import unittest
 
 import sys
 import os
@@ -36,11 +36,11 @@ class Test_glosbe(unittest.TestCase):
     def test_tramp(self):
         self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('tramp'))
 
-    # 単語での略語判定スコアの調整
+    # socore adjust
     def test_topic(self):
         self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('topic'))
 
-    # 2単語チェックの対応が必要
+    # neew 2 word check
     def test_pub(self):
         self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('pub'))
 

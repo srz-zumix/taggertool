@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import requests
@@ -81,7 +81,7 @@ class Glosbe:
         r = requests.get(Glosbe.api_url, params=payload)
         r.raise_for_status()
         if Glosbe.safe_mode:
-            # 800 リクエスト出したあたりで ban される
+            # limit = 800 request ?
             #sleep(randint(50, 500)/100.0)
             limit_count = 800 - 4
             if Glosbe.count % (limit_count) == 0:
