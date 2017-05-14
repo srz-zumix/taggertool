@@ -157,3 +157,15 @@ quant
 dep
 afa
 aff
+cem
+ind
+grad
+gal
+cem
+ind
+grad
+gal
+cem
+ind
+grad
+gal
