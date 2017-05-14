@@ -155,3 +155,5 @@ arg
 bol
 quant
 dep
+afa
+aff
