@@ -48,6 +48,12 @@ class Test_glosbe(unittest.TestCase):
     def test_vert(self):
         self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('vert'))
 
+    def test_ops(self):
+        self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('ops'))
+
+    def test_cgs(self):
+        self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('cgs'))
+
     def test_found(self):
         words = [
             'acorn',
@@ -55,6 +61,7 @@ class Test_glosbe(unittest.TestCase):
             'begin',
             'block',
             'compliment',
+            'celsius',
             'kana',
             'pat',
             'posit',
@@ -115,7 +122,6 @@ class Test_glosbe(unittest.TestCase):
         words = [
             'certs',
             'gens',
-            'ops',
             'subs',
             ]
         for word in words:

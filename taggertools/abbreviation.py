@@ -412,20 +412,15 @@ def is_spell_diff_word(word1, word2):
 
 
 r_html_special_char = re.compile('&[#|\w]+;')
+r_an = re.compile('^(a|an)\s', re.IGNORECASE)
+r_remove_tag = re.compile('[<|\[](/|)(i|b|sup)[>|\]]', re.IGNORECASE)
 def normalize_dict_text(text):
     # タグを削除
-    for tag in ['i', 'b', 'sup']:
-        text = text.replace('<'  + tag + '>', '')
-        text = text.replace('</' + tag + '>', '')
-        text = text.replace('['  + tag + ']', '')
-        text = text.replace('[/' + tag + ']', '')
+    text = r_remove_tag.sub('', text)
     # html 特殊文字削除
     text = r_html_special_char.sub('', text)
     # 先頭の 'A ', 'An ' を取り除く
-    if text.startswith('a '):
-        text = text[2:]
-    if text.startswith('an '):
-        text = text[3:]
+    text = r_an.sub('', text)
     # \u2019 (right single quartation) replact
     text = text.replace(r'\u2019', '\'')
     # 末尾の . ; を削除
@@ -438,15 +433,16 @@ def normalize_dict_text(text):
 r_glosbe_tag = re.compile('^\(([a-zA-Z,\s]*)\)(.*)')
 r_cockney_slang = re.compile('.*slang.*\[from [0-9]+th c\.\].*')
 def check_abbreviation_glosbe_en(word, d, adict, optional):
-    text = d['text'].lower()
+    text = d['text']
     # タグから除外
     m = r_glosbe_tag.match(text)
     tags = []
     if m:
         text = m.group(2).strip()
-        tags = m.group(1).split(',')
+        tags = m.group(1).lower().split(',')
 
-    text = normalize_dict_text(text)
+    origin_case_text = normalize_dict_text(text)
+    text = origin_case_text.lower()
     # 同一文はチェックしない
     if text in adict:
         return 0
@@ -515,6 +511,7 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
             elif r == DictResult.Abbreviation:
                 return -4
     else:
+        # Abbreviation
         def check_short_of(starts):
             if text.startswith(starts):
                 if ',' in text:
@@ -532,7 +529,6 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
                         return True
             return False
 
-        # XXX の略語って意味はダメ
         short_of_starts = [
             'abbreviation of',
             'abbreviation for',
@@ -565,19 +561,27 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
         if check_misspelling_of('misspelling of'):
             raise MisspellingError
 
-        # XXX の代用は無視
+        # Alternative
         def check_alternative_of(starts):
-            return check_misspelling_of(starts)
+            if text.startswith(starts):
+                r_case = re.compile(starts + '\s*(\w*)', re.IGNORECASE)
+                m = r_case.match(origin_case_text)
+                if m:
+                    if m.group(1).isupper():
+                        return True
+                    else:
+                        raise PluralError(m.group(1))
+            return False
 
         alternative_of_starts = [
             'alternative from of',
+            'alternative form of',
             'alternative spelling of',
+            'alternative letter-case form of',
         ]
         for ss in alternative_of_starts:
             if check_alternative_of(ss):
-                raise IgnoreError
-        if text.startswith('alternative letter-case form of'):
-            return -2
+                return -2
 
         # plural
         def check_plural_of(starts):
