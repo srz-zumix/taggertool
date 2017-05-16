@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os
@@ -13,6 +13,7 @@ commonwords =  [ 'alpha'
                 , 'cuda'
                 , 'csv'
                 , 'cpu'
+                , 'crypto'
                 , 'dot'
                 , 'doxygen'
                 , 'endian'

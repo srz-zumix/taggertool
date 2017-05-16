@@ -1,4 +1,4 @@
-﻿import unittest
+import unittest
 
 import sys
 import os
@@ -25,14 +25,22 @@ class Test_glosbe(unittest.TestCase):
     def test_your(self):
         self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('your'))
 
+    # test \u014b
+    def test_eng(self):
+        self.assertEqual(DictResult.NotFound, abbreviation.check_suspicion_glosbe('eng'))
+
+    # test \uxf6
+    def test_zoa(self):
+        self.assertEqual(DictResult.NotFound, abbreviation.check_suspicion_glosbe('zoa'))
+
     def test_tramp(self):
         self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('tramp'))
 
-    # 単語での略語判定スコアの調整
+    # socore adjust
     def test_topic(self):
         self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('topic'))
 
-    # 2単語チェックの対応が必要
+    # neew 2 word check
     def test_pub(self):
         self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('pub'))
 
@@ -47,6 +55,7 @@ class Test_glosbe(unittest.TestCase):
             'begin',
             'block',
             'compliment',
+            'kana',
             'pat',
             'posit',
             'pythagoras',
@@ -63,12 +72,12 @@ class Test_glosbe(unittest.TestCase):
 
     def test_abbreviation(self):
         words = [
-            'par',
             'abs',
             'chk',
             'min',
             'max',
             'neg',
+            'par',
             'sec',
             'seg',
             'sig',
@@ -85,6 +94,32 @@ class Test_glosbe(unittest.TestCase):
             ]
         for word in words:
             self.assertNotEqual(DictResult.Found, abbreviation.check_suspicion_glosbe(word), word)
+
+    def test_notfound(self):
+        words = [
+            'bailouts',
+            ]
+        for word in words:
+            self.assertNotEqual(DictResult.Found, abbreviation.check_suspicion_glosbe(word), word)
+
+    # need plural word search check
+    def test_plural(self):
+        words = [
+            'zos',
+            ]
+        for word in words:
+            self.assertEqual(DictResult.NotFound, abbreviation.check_suspicion_glosbe(word), word)
+
+    # gen'eration's
+    def test_plural_abbreviation(self):
+        words = [
+            'certs',
+            'gens',
+            'ops',
+            'subs',
+            ]
+        for word in words:
+            self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe(word), word)
 
     def test_abbreviation_or_notfound(self):
         words = [
