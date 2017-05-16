@@ -54,6 +54,9 @@ class Test_glosbe(unittest.TestCase):
     def test_cgs(self):
         self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('cgs'))
 
+    def test_what(self):
+        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('what'))
+
     def test_found(self):
         words = [
             'acorn',

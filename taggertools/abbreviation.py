@@ -147,6 +147,7 @@ class Cache:
     def add(self, word):
         if len(word) <= 2:
             return
+        word = word.lower()
         if word in self.gene:
             return
         self.gene.append(word)
@@ -157,6 +158,7 @@ class Cache:
     def add_abbreviation(self, word):
         if len(word) <= 2:
             return
+        word = word.lower()
         if word in self.abbreviations:
             return
         self.abbreviations.append(word)
@@ -678,6 +680,7 @@ def has_glosbe_ja_meaings_or_phrase(t):
     return False
 
 
+checked_plural = []
 def _check_suspicion_glosbe_impl(word, translate_word=None):
     check_case = False
     if not isascii(word):
@@ -705,10 +708,12 @@ def _check_suspicion_glosbe_impl(word, translate_word=None):
             elif any(x in [91945] for x in t['authors']):
                 optional_dicts.append(t)
 
+        global checked_plural
         plurals = []
         score, misspelling = get_abbreviation_glosbe_score(word, master_dicts, optional_dicts, plurals)
+        checked_plural.append(word)
         for plural in plurals:
-            if plural == word:
+            if plural in checked_plural:
                 continue
             # 複数形だった場合、単数形を辞書で引く
             result = check_suspicion_glosbe_impl(plural)
@@ -716,7 +721,7 @@ def _check_suspicion_glosbe_impl(word, translate_word=None):
                 if plural + 's' == word:
                     return DictResult.Abbreviation
                 else:
-                    socre -= 5
+                    score -= 5
             elif result == DictResult.Found:
                 if plural + 's' == word:
                     return DictResult.Found
@@ -772,8 +777,10 @@ def check_suspicion_glosbe(word):
     # 2文字以下は略語かどうかの判別がつけにくいため除外
     if len(word) <= 2:
         return DictResult.NoCheck
-    return check_suspicion_glosbe_impl(word)
-
+    result = check_suspicion_glosbe_impl(word)
+    global checked_plural
+    checked_plural = []
+    return result
 
 def is_abbreviation_dejizo_word_impl(word, body):
     #if u'化学記号' in body:
