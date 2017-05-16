@@ -564,8 +564,14 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
             raise MisspellingError
 
         # Alternative
-        def check_alternative_of(starts):
+        def check_alternative_of(starts, check_join):
             if text.startswith(starts):
+                if check_join:
+                    after = origin_case_text[len(starts):]
+                    after_words = re.split(',|:\-', after)[0].split()
+                    join_text = ''.join(after_words)
+                    if join_text == word:
+                        return False
                 r_case = re.compile(starts + '\s*(\w*)', re.IGNORECASE)
                 m = r_case.match(origin_case_text)
                 if m:
@@ -579,11 +585,19 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
             'alternative from of',
             'alternative form of',
             'alternative spelling of',
+        ]
+        alternative_of_starts2 = [
             'alternative letter-case form of',
         ]
         for ss in alternative_of_starts:
-            if check_alternative_of(ss):
+            if check_alternative_of(ss, True):
                 return -2
+        for ss in alternative_of_starts2:
+            if check_alternative_of(ss, False):
+                return -2
+
+        if text.startswith('obsolete spelling of'):
+            raise IgnoreError
 
         # plural
         def check_plural_of(starts):
