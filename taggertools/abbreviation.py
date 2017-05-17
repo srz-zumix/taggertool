@@ -147,6 +147,7 @@ class Cache:
     def add(self, word):
         if len(word) <= 2:
             return
+        word = word.lower()
         if word in self.gene:
             return
         self.gene.append(word)
@@ -157,6 +158,7 @@ class Cache:
     def add_abbreviation(self, word):
         if len(word) <= 2:
             return
+        word = word.lower()
         if word in self.abbreviations:
             return
         self.abbreviations.append(word)
@@ -412,20 +414,15 @@ def is_spell_diff_word(word1, word2):
 
 
 r_html_special_char = re.compile('&[#|\w]+;')
+r_an = re.compile('^(a|an)\s', re.IGNORECASE)
+r_remove_tag = re.compile('[<|\[](/|)(i|b|sup)[>|\]]', re.IGNORECASE)
 def normalize_dict_text(text):
     # タグを削除
-    for tag in ['i', 'b', 'sup']:
-        text = text.replace('<'  + tag + '>', '')
-        text = text.replace('</' + tag + '>', '')
-        text = text.replace('['  + tag + ']', '')
-        text = text.replace('[/' + tag + ']', '')
+    text = r_remove_tag.sub('', text)
     # html 特殊文字削除
     text = r_html_special_char.sub('', text)
     # 先頭の 'A ', 'An ' を取り除く
-    if text.startswith('a '):
-        text = text[2:]
-    if text.startswith('an '):
-        text = text[3:]
+    text = r_an.sub('', text)
     # \u2019 (right single quartation) replact
     text = text.replace(r'\u2019', '\'')
     # 末尾の . ; を削除
@@ -438,15 +435,16 @@ def normalize_dict_text(text):
 r_glosbe_tag = re.compile('^\(([a-zA-Z,\s]*)\)(.*)')
 r_cockney_slang = re.compile('.*slang.*\[from [0-9]+th c\.\].*')
 def check_abbreviation_glosbe_en(word, d, adict, optional):
-    text = d['text'].lower()
+    text = d['text']
     # タグから除外
     m = r_glosbe_tag.match(text)
     tags = []
     if m:
         text = m.group(2).strip()
-        tags = m.group(1).split(',')
+        tags = m.group(1).lower().split(',')
 
-    text = normalize_dict_text(text)
+    origin_case_text = normalize_dict_text(text)
+    text = origin_case_text.lower()
     # 同一文はチェックしない
     if text in adict:
         return 0
@@ -515,6 +513,7 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
             elif r == DictResult.Abbreviation:
                 return -4
     else:
+        # Abbreviation
         def check_short_of(starts):
             if text.startswith(starts):
                 if ',' in text:
@@ -532,7 +531,6 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
                         return True
             return False
 
-        # XXX の略語って意味はダメ
         short_of_starts = [
             'abbreviation of',
             'abbreviation for',
@@ -565,19 +563,41 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
         if check_misspelling_of('misspelling of'):
             raise MisspellingError
 
-        # XXX の代用は無視
-        def check_alternative_of(starts):
-            return check_misspelling_of(starts)
+        # Alternative
+        def check_alternative_of(starts, check_join):
+            if text.startswith(starts):
+                if check_join:
+                    after = origin_case_text[len(starts):]
+                    after_words = re.split('\s|\-', re.split(',|:', after)[0])
+                    join_text = ''.join(after_words)
+                    if join_text == word:
+                        return False
+                r_case = re.compile(starts + '\s*(\w*)', re.IGNORECASE)
+                m = r_case.match(origin_case_text)
+                if m:
+                    if m.group(1).isupper():
+                        return True
+                    else:
+                        raise PluralError(m.group(1))
+            return False
 
         alternative_of_starts = [
             'alternative from of',
+            'alternative form of',
             'alternative spelling of',
         ]
+        alternative_of_starts2 = [
+            'alternative letter-case form of',
+        ]
         for ss in alternative_of_starts:
-            if check_alternative_of(ss):
-                raise IgnoreError
-        if text.startswith('alternative letter-case form of'):
-            return -2
+            if check_alternative_of(ss, True):
+                return -2
+        for ss in alternative_of_starts2:
+            if check_alternative_of(ss, False):
+                return -2
+
+        if text.startswith('obsolete spelling of'):
+            raise IgnoreError
 
         # plural
         def check_plural_of(starts):
@@ -674,6 +694,7 @@ def has_glosbe_ja_meaings_or_phrase(t):
     return False
 
 
+checked_plural = []
 def _check_suspicion_glosbe_impl(word, translate_word=None):
     check_case = False
     if not isascii(word):
@@ -701,10 +722,12 @@ def _check_suspicion_glosbe_impl(word, translate_word=None):
             elif any(x in [91945] for x in t['authors']):
                 optional_dicts.append(t)
 
+        global checked_plural
         plurals = []
         score, misspelling = get_abbreviation_glosbe_score(word, master_dicts, optional_dicts, plurals)
+        checked_plural.append(word)
         for plural in plurals:
-            if plural == word:
+            if plural in checked_plural:
                 continue
             # 複数形だった場合、単数形を辞書で引く
             result = check_suspicion_glosbe_impl(plural)
@@ -712,7 +735,7 @@ def _check_suspicion_glosbe_impl(word, translate_word=None):
                 if plural + 's' == word:
                     return DictResult.Abbreviation
                 else:
-                    socre -= 5
+                    score -= 5
             elif result == DictResult.Found:
                 if plural + 's' == word:
                     return DictResult.Found
@@ -768,8 +791,10 @@ def check_suspicion_glosbe(word):
     # 2文字以下は略語かどうかの判別がつけにくいため除外
     if len(word) <= 2:
         return DictResult.NoCheck
-    return check_suspicion_glosbe_impl(word)
-
+    result = check_suspicion_glosbe_impl(word)
+    global checked_plural
+    checked_plural = []
+    return result
 
 def is_abbreviation_dejizo_word_impl(word, body):
     #if u'化学記号' in body:

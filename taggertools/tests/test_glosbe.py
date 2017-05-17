@@ -48,6 +48,21 @@ class Test_glosbe(unittest.TestCase):
     def test_vert(self):
         self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('vert'))
 
+    def test_ops(self):
+        self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('ops'))
+
+    def test_cgs(self):
+        self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('cgs'))
+
+    def test_what(self):
+        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('what'))
+
+    def test_filesystem(self):
+        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('filesystem'))
+
+    def test_righthand(self):
+        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('righthand'))
+
     def test_found(self):
         words = [
             'acorn',
@@ -55,8 +70,10 @@ class Test_glosbe(unittest.TestCase):
             'begin',
             'block',
             'compliment',
+            'celsius',
             'kana',
             'pat',
+            'printer',
             'posit',
             'pythagoras',
             'repository',
@@ -91,12 +108,6 @@ class Test_glosbe(unittest.TestCase):
         words = [
             'gis',
             'pos',
-            ]
-        for word in words:
-            self.assertNotEqual(DictResult.Found, abbreviation.check_suspicion_glosbe(word), word)
-
-    def test_notfound(self):
-        words = [
             'bailouts',
             ]
         for word in words:
@@ -115,7 +126,6 @@ class Test_glosbe(unittest.TestCase):
         words = [
             'certs',
             'gens',
-            'ops',
             'subs',
             ]
         for word in words:
