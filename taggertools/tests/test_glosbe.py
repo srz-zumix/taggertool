@@ -60,6 +60,9 @@ class Test_glosbe(unittest.TestCase):
     def test_filesystem(self):
         self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('filesystem'))
 
+    def test_righthand(self):
+        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('righthand'))
+
     def test_found(self):
         words = [
             'acorn',
@@ -105,16 +108,10 @@ class Test_glosbe(unittest.TestCase):
         words = [
             'gis',
             'pos',
-            ]
-        for word in words:
-            self.assertNotEqual(DictResult.Found, abbreviation.check_suspicion_glosbe(word), word)
-
-    def test_notfound(self):
-        words = [
             'bailouts',
             ]
         for word in words:
-            self.assertNotEqual(DictResult.NotFound, abbreviation.check_suspicion_glosbe(word), word)
+            self.assertNotEqual(DictResult.Found, abbreviation.check_suspicion_glosbe(word), word)
 
     # need plural word search check
     def test_plural(self):

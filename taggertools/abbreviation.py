@@ -568,7 +568,7 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
             if text.startswith(starts):
                 if check_join:
                     after = origin_case_text[len(starts):]
-                    after_words = re.split(',|:\-', after)[0].split()
+                    after_words = re.split('\s|\-', re.split(',|:', after)[0])
                     join_text = ''.join(after_words)
                     if join_text == word:
                         return False
