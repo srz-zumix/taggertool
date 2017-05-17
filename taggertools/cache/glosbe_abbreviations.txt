@@ -1,3 +1,8 @@
+diss
+pseudo
+percent
+stale
+cgs
 ref
 paren
 doc
@@ -157,14 +162,6 @@ quant
 dep
 afa
 aff
-cem
-ind
-grad
-gal
-cem
-ind
-grad
-gal
 cem
 ind
 grad
