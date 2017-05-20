@@ -8,7 +8,6 @@ import codecs
 import requests
 import unicodedata
 import argparse
-import shutil
 
 import keywords
 import filereader
@@ -17,6 +16,7 @@ from dejizo import Dejizo
 from glosbe import Glosbe
 from argparse import ArgumentParser
 from difflib import SequenceMatcher
+from abbreviation_cache import CacheManager
 
 try:
     #import treetaggerwrapper
@@ -53,120 +53,6 @@ class Location:
             self.relpath = None
 
 
-class Cache:
-    gene = []
-    abbreviations = []
-    gene_file = None
-    abbreviations_file = None
-
-    def __init__(self, name):
-        self.name = name
-
-    def setup(self, dir):
-        if not os.path.exists(dir):
-            os.makedirs(dir)
-        self._load(dir)
-        self._open(dir, 'a')
-
-    def teardown(self):
-        self._close()
-
-    def load(self, dir):
-        self._load(dir)
-
-    def _load(self, dir):
-        path = Cache.get_gene_filename(dir, self.name)
-        if os.path.exists(path):
-            f = open(path, 'r')
-            for w in f:
-                self.gene.append(w.rstrip())
-            f.close()
-        path = Cache.get_abbreviation_filename(dir, self.name)
-        if os.path.exists(path):
-            f = open(path, 'r')
-            for w in f:
-                self.abbreviations.append(w.rstrip())
-            f.close()
-
-    def _open(self, dir, mode):
-        self.gene_file = open(Cache.get_gene_filename(dir, self.name), mode)
-        self.abbreviations_file = open(Cache.get_abbreviation_filename(dir, self.name), mode)
-
-    def _close(self):
-        if self.gene_file:
-            self.gene_file.close()
-        if self.abbreviations_file:
-            self.abbreviations_file.close()
-
-    @staticmethod
-    def get_gene_filename(dir, name):
-        return dir + '/' + name + '.txt'
-
-    @staticmethod
-    def get_abbreviation_filename(dir, name):
-        return dir + '/' + name + '_abbreviations.txt'
-
-    @staticmethod
-    def islock(dir, name):
-        for f in Cache.get_files(dir, name):
-            if os.path.exists(f + '.lock'):
-                return True
-        return False
-
-    @staticmethod
-    def lock(dir, name):
-        if not Cache.islock(dir, name):
-            for f in Cache.get_files(dir, name):
-                shutil.copy(f, f + '.lock')
-
-    @staticmethod
-    def unlock(dir, name):
-        for f in Cache.get_files(dir, name):
-            lockfile = f + '.lock'
-            if os.path.exists(lockfile):
-                os.remove(lockfile)
-
-    @staticmethod
-    def sort(dir, name):
-        for f in Cache.get_files(dir, name):
-            if os.path.exists(f):
-                words = []
-                f = open(path, 'r')
-                for w in f:
-                    words.append(w.rstrip())
-                f.close()
-                f = open(path, 'w')
-                for w in sorted(set(words)):
-                    f.write(w + '\n')
-                f.close()
-
-    @staticmethod
-    def get_files(dir, name):
-        return [ Cache.get_gene_filename(dir, name), Cache.get_abbreviation_filename(dir, name) ]
-
-    def add(self, word):
-        if len(word) <= 2:
-            return
-        word = word.lower()
-        if word in self.gene:
-            return
-        self.gene.append(word)
-        if self.gene_file:
-            self.gene_file.write(word + '\n')
-            self.gene_file.flush()
-
-    def add_abbreviation(self, word):
-        if len(word) <= 2:
-            return
-        word = word.lower()
-        if word in self.abbreviations:
-            return
-        self.abbreviations.append(word)
-        if self.abbreviations_file:
-            self.abbreviations_file.write(word + '\n')
-            self.abbreviations_file.flush()
-
-
 class MisspellingError(Exception):
     pass
 
@@ -201,21 +87,10 @@ class WordResult:
         self.locations.append(location)
 
 
-service_cache = {}
 words = {}
 checked_words = []
 cache_choices = ['glosbe', 'dejizo']
-
-
-def add_abbreviation(dict, word):
-    if dict in service_cache:
-        service_cache[dict].add_abbreviation(word)
-
-
-def add_cache(dict, word):
-    if dict in service_cache:
-        service_cache[dict].add(word)
-
+cache = None
 
 def parse_command_line():
     parser = ArgumentParser()
@@ -598,6 +473,8 @@ def check_abbreviation_glosbe_en(word, d, adict, optional):
 
         if text.startswith('obsolete spelling of'):
             raise IgnoreError
+        if 'sound of' in text:
+            raise IgnoreError
 
         # plural
         def check_plural_of(starts):
@@ -749,17 +626,17 @@ def _check_suspicion_glosbe_impl(word, translate_word=None):
                 score -= 3
         score += (int)(ja_count / 10)
         if score < 0:
-            add_abbreviation('glosbe', word)
+            cache.add_abbreviation('glosbe', word)
             return DictResult.Abbreviation
 
         if misspelling and score < 2:
             return DictResult.Misspelling
 
         if len(master_dicts) > 0:
-            add_cache('glosbe', word)
+            cache.add_cache('glosbe', word)
             return DictResult.Found
         if len(tuc) > 20:
-            add_cache('glosbe', word)
+            cache.add_cache('glosbe', word)
             return DictResult.Found
 
         if ja_count > 0 and check_case:
@@ -841,7 +718,7 @@ def check_suspicion_dejizo_impl(word, dict):
                 if Dejizo.is_getable(word, dict):
                     try:
                         if is_abbreviation_dejizo_impl(word, d, dict):
-                            add_abbreviation('dejizo', word)
+                            cache.add_abbreviation('dejizo', word)
                             return DictResult.Abbreviation
                         else:
                             return DictResult.Found
@@ -868,7 +745,7 @@ def check_suspicion_dejizo(word):
     if ret == DictResult.NotFound and ret2 == DictResult.NotFound:
         return DictResult.NotFound
     # どちらかの辞書にあったらキャッシュに登録
-    add_cache('dejizo', word)
+    cache.add_cache('dejizo', word)
     return DictResult.Found
 
 
@@ -878,9 +755,8 @@ def is_whitelist(word):
     # 辞書にあったら除外
     if word in gene:
         return True
-    for cache in service_cache.values():
-        if word in cache.gene:
-            return True
+    if cache.is_cached(word):
+        return True
     return False
 
 
@@ -1028,9 +904,8 @@ def check_suspicion(word):
         if word in langkeywords:
             return DictResult.Found
     # 略語リストにあったら即アウト
-    for cache in service_cache.values():
-        if word in cache.abbreviations:
-            return DictResult.Abbreviation
+    if cache.is_abbreviation(word):
+        return DictResult.Abbreviation
     # 接尾辞
     if not is_suspicion_post_suffix(word, length):
         return DictResult.Found
@@ -1267,16 +1142,14 @@ def make_wordlist(file):
 
 
 def setup_cache(name):
-    cache = Cache(name)
-    cache.setup(options.cache_dir)
-    service_cache[name] = cache
+    cache.setup(name)
 
 
 def setup_cache_rebuild():
-    files = Cache.get_files(options.cache_dir, options.cache_rebuild)
+    files = cache.get_files(options.cache_rebuild)
     options.file = []
-    locked = Cache.islock(options.cache_dir, options.cache_rebuild)
-    Cache.lock(options.cache_dir, options.cache_rebuild)
+    locked = cache.islock(options.cache_rebuild)
+    cache.lock(options.cache_rebuild)
     for f in files:
         lockfile = f + '.lock'
         options.file.append(lockfile)
@@ -1287,11 +1160,13 @@ def setup_cache_rebuild():
 
 
 def setup():
+    global cache
     global gene
     global whitelist
     global abbreviations
     if options.cache_dir is None:
         options.cache_dir = os.path.join(os.path.dirname(__file__), 'cache')
+    cache = CacheManager(options.cache_dir)
     if options.cache_rebuild:
         setup_cache_rebuild()
     if options.gene:
@@ -1311,9 +1186,9 @@ def setup():
         for e in options.exclude:
             whitelist.extend(e.split(','))
     if options.load_cache:
-        for f in options.load_cache:
-            whitelist.extend(make_wordlist(Cache.get_gene_filename(options.cache_dir, f)))
-            abbreviations.extend(make_wordlist(Cache.get_abbreviation_filename(options.cache_dir, f)))
+        for name in options.load_cache:
+            whitelist.extend(cache.load_whitelist(name))
+            abbreviations.extend(cache.load_abbreviationlist(name))
     if options.safe_mode:
         Glosbe.set_safe_mode(True)
     if options.no_request_limit:
@@ -1321,12 +1196,11 @@ def setup():
 
 
 def teardown():
-    for cache in service_cache.values():
-        cache.teardown()
+    cache.teardown()
     if options.cache_rebuild:
         if getattr(options, options.cache_rebuild):
-            #Cache.sort(options.cache_dir, options.cache_rebuild)
-            Cache.unlock(options.cache_dir, options.cache_rebuild)
+            #cache.sort(options.cache_rebuild)
+            cache.unlock(options.cache_rebuild)
 
 
 def checkfilelist():
