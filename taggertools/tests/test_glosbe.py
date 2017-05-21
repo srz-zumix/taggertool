@@ -108,13 +108,11 @@ class Test_glosbe(unittest.TestCase):
         words = [
             'gis',
             'pos',
-            'bailouts',
             ]
         for word in words:
             self.assertNotEqual(DictResult.Found, abbreviation.check_suspicion_glosbe(word), word)
 
-    # need plural word search check
-    def test_plural(self):
+    def test_plural_notfound(self):
         words = [
             'zos',
             ]

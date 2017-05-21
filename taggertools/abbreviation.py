@@ -90,7 +90,7 @@ class WordResult:
 words = {}
 checked_words = []
 cache_choices = ['glosbe', 'dejizo']
-cache = None
+cache = CacheManager()
 
 def parse_command_line():
     parser = ArgumentParser()
@@ -1166,7 +1166,7 @@ def setup():
     global abbreviations
     if options.cache_dir is None:
         options.cache_dir = os.path.join(os.path.dirname(__file__), 'cache')
-    cache = CacheManager(options.cache_dir)
+    cache.set_cache_dir(options.cache_dir)
     if options.cache_rebuild:
         setup_cache_rebuild()
     if options.gene:

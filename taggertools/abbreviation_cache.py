@@ -81,8 +81,11 @@ class Cache:
 
 class CacheManager:
 
-    def __init__(self, cache_dir):
+    def __init__(self):
         self.service_cache = {}
+        self.cache_dir = None
+
+    def set_cache_dir(cache_dir):
         self.cache_dir = cache_dir
 
     def add_abbreviation(self, name, word):
