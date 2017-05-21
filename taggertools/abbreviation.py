@@ -16,7 +16,7 @@ from dejizo import Dejizo
 from glosbe import Glosbe
 from argparse import ArgumentParser
 from difflib import SequenceMatcher
-from abbreviation_cache import CacheManager
+from abbreviation_cache import cache
 
 try:
     #import treetaggerwrapper
@@ -90,7 +90,6 @@ class WordResult:
 words = {}
 checked_words = []
 cache_choices = ['glosbe', 'dejizo']
-cache = CacheManager()
 
 def parse_command_line():
     parser = ArgumentParser()

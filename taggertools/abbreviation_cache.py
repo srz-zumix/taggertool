@@ -85,7 +85,7 @@ class CacheManager:
         self.service_cache = {}
         self.cache_dir = None
 
-    def set_cache_dir(cache_dir):
+    def set_cache_dir(self, cache_dir):
         self.cache_dir = cache_dir
 
     def add_abbreviation(self, name, word):
@@ -167,3 +167,5 @@ class CacheManager:
             word = line.strip()
             wordlist.append(word.lower())
         return wordlist
+
+cache = CacheManager()
