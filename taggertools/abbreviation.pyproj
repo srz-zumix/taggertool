@@ -27,6 +27,7 @@
   <ItemGroup>
     <Compile Include="abbreviation.py" />
     <Compile Include="abbreviation_cache.py" />
+    <Compile Include="abbreviation_defs.py" />
     <Compile Include="abbreviation_glosbe.py" />
     <Compile Include="dejizo.py" />
     <Compile Include="filereader.py" />

@@ -4,64 +4,67 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-import abbreviation
-from abbreviation import DictResult
+import abbreviation_glosbe
+from abbreviation_defs import DictResult
 
 
 class Test_glosbe(unittest.TestCase):
     def test_apple(self):
-        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('apple'))
+        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('apple'))
 
     def test_again(self):
-        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('again'))
+        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('again'))
 
 #    def test_they(self):
-#        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('they'))
+#        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('they'))
 
     def test_their(self):
-        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('their'))
+        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('their'))
 
     # test \u2019
     def test_your(self):
-        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('your'))
+        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('your'))
 
     # test \u014b
     def test_eng(self):
-        self.assertEqual(DictResult.NotFound, abbreviation.check_suspicion_glosbe('eng'))
+        self.assertEqual(DictResult.NotFound, abbreviation_glosbe.check_suspicion('eng'))
 
     # test \uxf6
     def test_zoa(self):
-        self.assertEqual(DictResult.NotFound, abbreviation.check_suspicion_glosbe('zoa'))
+        self.assertEqual(DictResult.NotFound, abbreviation_glosbe.check_suspicion('zoa'))
 
     def test_tramp(self):
-        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('tramp'))
+        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('tramp'))
 
     # socore adjust
     def test_topic(self):
-        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('topic'))
+        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('topic'))
 
     # neew 2 word check
     def test_pub(self):
-        self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('pub'))
+        self.assertEqual(DictResult.Abbreviation, abbreviation_glosbe.check_suspicion('pub'))
 
     # archaic
     def test_vert(self):
-        self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('vert'))
+        self.assertEqual(DictResult.Abbreviation, abbreviation_glosbe.check_suspicion('vert'))
 
     def test_ops(self):
-        self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('ops'))
+        self.assertEqual(DictResult.Abbreviation, abbreviation_glosbe.check_suspicion('ops'))
 
     def test_cgs(self):
-        self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe('cgs'))
+        self.assertEqual(DictResult.Abbreviation, abbreviation_glosbe.check_suspicion('cgs'))
 
     def test_what(self):
-        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('what'))
+        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('what'))
 
     def test_filesystem(self):
-        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('filesystem'))
+        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('filesystem'))
 
     def test_righthand(self):
-        self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe('righthand'))
+        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('righthand'))
+
+    def test_tsk(self):
+        self.assertEqual(DictResult.NoCheck, abbreviation_glosbe.check_suspicion('tsk'))
 
     def test_found(self):
         words = [
@@ -85,7 +88,7 @@ class Test_glosbe(unittest.TestCase):
             'teardown',
             ]
         for word in words:
-            self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe(word), word)
+            self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion(word), word)
 
     def test_abbreviation(self):
         words = [
@@ -102,7 +105,7 @@ class Test_glosbe(unittest.TestCase):
             'vid',
             ]
         for word in words:
-            self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe(word), word)
+            self.assertEqual(DictResult.Abbreviation, abbreviation_glosbe.check_suspicion(word), word)
 
     def test_found_else(self):
         words = [
@@ -110,14 +113,14 @@ class Test_glosbe(unittest.TestCase):
             'pos',
             ]
         for word in words:
-            self.assertNotEqual(DictResult.Found, abbreviation.check_suspicion_glosbe(word), word)
+            self.assertNotEqual(DictResult.Found, abbreviation_glosbe.check_suspicion(word), word)
 
     def test_plural_notfound(self):
         words = [
             'zos',
             ]
         for word in words:
-            self.assertEqual(DictResult.NotFound, abbreviation.check_suspicion_glosbe(word), word)
+            self.assertEqual(DictResult.NotFound, abbreviation_glosbe.check_suspicion(word), word)
 
     # gen'eration's
     def test_plural_abbreviation(self):
@@ -127,14 +130,14 @@ class Test_glosbe(unittest.TestCase):
             'subs',
             ]
         for word in words:
-            self.assertEqual(DictResult.Abbreviation, abbreviation.check_suspicion_glosbe(word), word)
+            self.assertEqual(DictResult.Abbreviation, abbreviation_glosbe.check_suspicion(word), word)
 
     def test_abbreviation_or_notfound(self):
         words = [
             'pos',
             ]
         for word in words:
-            r = abbreviation.check_suspicion_glosbe(word)
+            r = abbreviation_glosbe.check_suspicion(word)
             self.assertIn(r, [ DictResult.Abbreviation, DictResult.NotFound ], word)
 
     def test_misspelling(self):
@@ -144,7 +147,7 @@ class Test_glosbe(unittest.TestCase):
             'repetetive',
             ]
         for word in words:
-            self.assertEqual(DictResult.Misspelling, abbreviation.check_suspicion_glosbe(word), word)
+            self.assertEqual(DictResult.Misspelling, abbreviation_glosbe.check_suspicion(word), word)
 
     def test_2736(self):
         words = [
@@ -158,7 +161,7 @@ class Test_glosbe(unittest.TestCase):
             'useful',
             ]
         for word in words:
-            self.assertEqual(DictResult.Found, abbreviation.check_suspicion_glosbe(word), word)
+            self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion(word), word)
 
 
 if __name__ == '__main__':
