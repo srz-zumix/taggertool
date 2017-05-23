@@ -63,6 +63,9 @@ class Test_glosbe(unittest.TestCase):
     def test_righthand(self):
         self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('righthand'))
 
+    def test_they(self):
+        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('they'))
+
     def test_tsk(self):
         self.assertEqual(DictResult.NoCheck, abbreviation_glosbe.check_suspicion('tsk'))
 
@@ -106,6 +109,14 @@ class Test_glosbe(unittest.TestCase):
             ]
         for word in words:
             self.assertEqual(DictResult.Abbreviation, abbreviation_glosbe.check_suspicion(word), word)
+
+    def test_3word_notfound(self):
+        words = [
+            'amb',
+            'hup',
+            ]
+        for word in words:
+            self.assertEqual(DictResult.NotFound, abbreviation_glosbe.check_suspicion(word), word)
 
     def test_found_else(self):
         words = [

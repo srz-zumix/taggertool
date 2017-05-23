@@ -560,21 +560,20 @@ def detect_encoding(path):
     encoding_list.remove(default_encoding)
     encoding_list.insert(0, default_encoding)
     for encoding in encoding_list:
-        f = codecs.open(path, 'r', encoding=encoding)
-        try:
-            f.readline()
-            f.close()
-            if encoding == prev_detect_encoding:
-                default_encoding_change_count += 1
-                if default_encoding_change_count >= 3:
-                    default_encoding = encoding
+        with codecs.open(path, 'r', encoding=encoding) as f:
+            try:
+                f.readline()
+                if encoding == prev_detect_encoding:
+                    default_encoding_change_count += 1
+                    if default_encoding_change_count >= 3:
+                        default_encoding = encoding
+                    else:
+                        default_encoding_change_count = 0
                 else:
-                    default_encoding_change_count = 0
-            else:
-                prev_detect_encoding = encoding
-            return encoding
-        except:
-            f.close()
+                    prev_detect_encoding = encoding
+                return encoding
+            except:
+                pass
     return default_encoding
 
 
@@ -699,22 +698,22 @@ def isgeneword(s):
 def make_gene(file):
     gene = []
     if not options.ignore_noexists or os.path.exists(file):
-        f = open(file, 'r')
-        for line in f:
-            word = line.strip()
-            if isgeneword(word):
-                gene.append(word.lower())
+        with open(file, 'r') as f:
+            for line in f:
+                word = line.strip()
+                if isgeneword(word):
+                    gene.append(word.lower())
     return gene
 
 
 def make_wordlist(file):
     wordlist = []
     if not options.ignore_noexists or os.path.exists(file):
-        f = open(file, 'r')
-        for line in f:
-            word = line.strip()
-            if isalpha(word):
-                wordlist.append(word.lower())
+        with open(file, 'r') as f:
+            for line in f:
+                word = line.strip()
+                if isalpha(word):
+                    wordlist.append(word.lower())
     else:
         print(file + ': ignore')
     return wordlist

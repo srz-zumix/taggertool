@@ -17,6 +17,7 @@ _checked_plural = []
 
 _global_ignore_list = [
     'tsk',
+    'tut',
     ]
 
 def isascii(s):
@@ -149,11 +150,20 @@ def _check_en(word, d, adict, optional):
             'short from for',
             'shortened form of',
             'clipped form of',
-            'eye dialect spelling of',
         ]
         for ss in short_of_starts:
             if check_short_of(ss):
                 return -5
+
+        eye_dialect_of_starts = [
+            'eye dialect spelling of',
+        ]
+        for ss in eye_dialect_of_starts:
+            if check_short_of(ss):
+                if optional:
+                    return -3
+                else:
+                    return -5
 
         # misspelling
         def check_misspelling_of(starts):
@@ -368,10 +378,13 @@ def _check_suspicion_impl(word, translate_word=None):
         if misspelling and score < 2:
             return DictResult.Misspelling
 
-        if len(master_dicts) > 0:
+        if len(word) > 3 and len(master_dicts) > 0:
             cache.add_cache('glosbe', word)
             return DictResult.Found
         if len(tuc) > 20:
+            cache.add_cache('glosbe', word)
+            return DictResult.Found
+        if score > 2:
             cache.add_cache('glosbe', word)
             return DictResult.Found
 

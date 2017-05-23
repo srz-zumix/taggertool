@@ -28,16 +28,14 @@ class Cache:
     def _load(self, dir):
         path = Cache.get_gene_filename(dir, self.name)
         if os.path.exists(path):
-            f = open(path, 'r')
-            for w in f:
-                self.gene.append(w.rstrip())
-            f.close()
+            with open(path, 'r') as f:
+                for w in f:
+                    self.gene.append(w.rstrip())
         path = Cache.get_abbreviation_filename(dir, self.name)
         if os.path.exists(path):
-            f = open(path, 'r')
-            for w in f:
-                self.abbreviations.append(w.rstrip())
-            f.close()
+            with open(path, 'r') as f:
+                for w in f:
+                    self.abbreviations.append(w.rstrip())
 
     def _open(self, dir, mode):
         self.gene_file = open(Cache.get_gene_filename(dir, self.name), mode)
@@ -144,14 +142,12 @@ class CacheManager:
         for f in self.get_files(name):
             if os.path.exists(f):
                 words = []
-                f = open(path, 'r')
-                for w in f:
-                    words.append(w.rstrip())
-                f.close()
-                f = open(path, 'w')
-                for w in sorted(set(words)):
-                    f.write(w + '\n')
-                f.close()
+                with open(path, 'r') as f:
+                    for w in f:
+                        words.append(w.rstrip())
+                with open(path, 'w') as f:
+                    for w in sorted(set(words)):
+                        f.write(w + '\n')
 
     def load_whitelist(self, name):
         return CacheManager._file_to_list(Cache.get_gene_filename(self.cache_dir, name))
@@ -162,10 +158,10 @@ class CacheManager:
     @staticmethod
     def _file_to_list(path):
         wordlist = []
-        f = open(path, 'r')
-        for line in f:
-            word = line.strip()
-            wordlist.append(word.lower())
+        with open(path, 'r') as f:
+            for line in f:
+                word = line.strip()
+                wordlist.append(word.lower())
         return wordlist
 
 cache = CacheManager()
