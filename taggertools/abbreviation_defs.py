@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 
 
+class RequestLimitError(Exception):
+    pass
+
+
 class MisspellingError(Exception):
     pass
 

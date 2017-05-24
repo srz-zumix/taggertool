@@ -20,6 +20,7 @@ from difflib import SequenceMatcher
 from abbreviation_cache import cache
 from abbreviation_defs import DictResult
 from abbreviation_defs import WordResult
+from abbreviation_defs import RequestLimitError
 
 try:
     #import treetaggerwrapper
@@ -493,9 +494,14 @@ def check_suspicion(word):
         return DictResult.Found
     # Web API
     if options.glosbe:
-        r = abbreviation_glosbe.check_suspicion(word)
-        if r != DictResult.NotFound:
-            return r
+        try:
+            r = abbreviation_glosbe.check_suspicion(word)
+            if r != DictResult.NotFound:
+                return r
+        except RequestLimitError:
+            options.glosbe = False
+            if options.debug:
+                sys.exit(1)
     if options.dejizo:
         r = check_suspicion_dejizo(word)
         if r != DictResult.NotFound:

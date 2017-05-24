@@ -12,6 +12,7 @@ from abbreviation_defs import WordResult
 from abbreviation_defs import MisspellingError
 from abbreviation_defs import IgnoreError
 from abbreviation_defs import PluralError
+from abbreviation_defs import RequestLimitError
 
 _checked_plural = []
 
@@ -402,9 +403,7 @@ def _check_suspicion(word):
         if e.response.status_code == 429:
             print("request count: ", Glosbe.count)
             print("Please access the glosbe, click the search button and check reCAPTCHA.")
-            options.glosbe = False
-            if options.debug:
-                sys.exit(1)
+            raise RequestLimitError
         else:
             raise
     except:
