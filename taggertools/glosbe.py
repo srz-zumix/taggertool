@@ -99,7 +99,10 @@ if __name__ == '__main__':
         r = g.translate(sys.argv[1])
     else:
         r = g.translate('test')
-    pprint.pprint(r)
-    print(g.get_meanings(r))
-    print(g.get_phrases(r))
+    try:
+        pprint.pprint(r)
+        print(g.get_meanings(r))
+        print(g.get_phrases(r))
+    except:
+        pass
     print(len(r['tuc']))

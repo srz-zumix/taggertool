@@ -11,10 +11,12 @@ from abbreviation_defs import DictResult
 from abbreviation_defs import WordResult
 from abbreviation_defs import MisspellingError
 from abbreviation_defs import IgnoreError
+from abbreviation_defs import InflectedError
 from abbreviation_defs import PluralError
+from abbreviation_defs import PastError
 from abbreviation_defs import RequestLimitError
 
-_checked_plural = []
+_checked_inflected = []
 
 _global_ignore_list = [
     'tsk',
@@ -199,7 +201,7 @@ def _check_en(word, d, adict, optional):
                     if m.group(1).isupper():
                         return True
                     else:
-                        raise PluralError(m.group(1))
+                        raise InflectedError(m.group(1))
             return False
 
         alternative_of_starts = [
@@ -217,28 +219,48 @@ def _check_en(word, d, adict, optional):
             if check_alternative_of(ss, False):
                 return -2
 
-        if text.startswith('obsolete spelling of'):
-            raise IgnoreError
+        obsolete_of_starts = [
+            'obsolete spelling of',
+            'obsolete form of',
+        ]
+        for ss in obsolete_of_starts:
+            if text.startswith(ss):
+                raise IgnoreError
         if 'sound of' in text:
             raise IgnoreError
 
-        # plural
-        def check_plural_of(starts):
+        # inflected
+        def check_inflected_of(starts):
             if text.startswith(starts):
                 after = text[len(starts):]
                 after_words = re.split(',|:', after)[0].split()
                 if len(after_words) == 1:
-                    raise PluralError(after_words[0])
+                    return after_words[0]
                 else:
                     raise IgnoreError
+            return None
 
+        # past
+        past_of_starts = [
+            'simple past of',
+            'simple past tense of',
+            'past participle of',
+        ]
+        for ss in past_of_starts:
+            x = check_inflected_of(ss)
+            if x:
+                raise PastError(x)
+
+        # plural
         plural_of_starts = [
             'plural of',
             'plural form of',
             'singular form of',
         ]
         for ss in plural_of_starts:
-            check_plural_of(ss)
+            x = check_inflected_of(ss)
+            if x:
+                raise PluralError(x)
 
         # ; 区切りで単語チェック
         for t in text.split(';'):
@@ -270,7 +292,7 @@ def _check_tuc(word, t, adict, optional):
     return 0
 
 
-def _get_score(word, tuc, optional_tuc, plurals):
+def _get_score(word, tuc, optional_tuc, inflected):
     score = 0
     misspelling = False
     adict = []
@@ -280,10 +302,10 @@ def _get_score(word, tuc, optional_tuc, plurals):
             score += rs
         except IgnoreError:
             tuc.remove(t)
-        except PluralError as e:
+        except InflectedError as e:
             tuc.remove(t)
-            if e.message not in plurals:
-                plurals.append(e.message)
+            if e.message not in inflected:
+                inflected.append(e)
         except MisspellingError:
             misspelling = True
             tuc.remove(t)
@@ -296,9 +318,9 @@ def _get_score(word, tuc, optional_tuc, plurals):
                 score += rs
         except IgnoreError:
             pass
-        except PluralError as e:
-            if e.message not in plurals:
-                plurals.append(e.message)
+        except InflectedError as e:
+            if e.message not in inflected:
+                inflected.append(e)
         except MisspellingError:
             misspelling = True
         except:
@@ -346,25 +368,29 @@ def _check_suspicion_impl(word, translate_word=None):
             elif any(x in [91945] for x in t['authors']):
                 optional_dicts.append(t)
 
-        global _checked_plural
-        plurals = []
-        score, misspelling = _get_score(word, master_dicts, optional_dicts, plurals)
-        _checked_plural.append(word)
-        for plural in plurals:
-            if plural in _checked_plural:
+        global _checked_inflected
+        inflected_list = []
+        score, misspelling = _get_score(word, master_dicts, optional_dicts, inflected_list)
+        _checked_inflected.append(word)
+        inflected_found = []
+        for e in inflected_list:
+            inflected_word = e.message
+            if inflected_word in inflected_found:
+                score += 1
+            if inflected_word in _checked_inflected:
                 continue
-            # 複数形だった場合、単数形を辞書で引く
-            result = _check_suspicion(plural)
+            result = _check_suspicion(inflected_word)
             if result == DictResult.Abbreviation:
-                if plural + 's' == word:
+                if isinstance(e, PluralError) and inflected_word + 's' == word:
                     return DictResult.Abbreviation
                 else:
                     score -= 5
             elif result == DictResult.Found:
-                if plural + 's' == word:
+                if isinstance(e, PluralError) and inflected_word + 's' == word:
                     return DictResult.Found
                 else:
                     score += 1
+                    inflected_found .append(inflected_word)
             elif result == DictResult.NotFound:
                 pass
             elif result == DictResult.NoCheck:
@@ -379,13 +405,13 @@ def _check_suspicion_impl(word, translate_word=None):
         if misspelling and score < 2:
             return DictResult.Misspelling
 
-        if len(word) > 3 and len(master_dicts) > 0:
+        if score > 2:
+            cache.add_cache('glosbe', word)
+            return DictResult.Found
+        if len(word) > 3 and master_dicts:
             cache.add_cache('glosbe', word)
             return DictResult.Found
         if len(tuc) > 20:
-            cache.add_cache('glosbe', word)
-            return DictResult.Found
-        if score > 2:
             cache.add_cache('glosbe', word)
             return DictResult.Found
 
@@ -417,6 +443,6 @@ def check_suspicion(word):
     if len(word) <= 2:
         return DictResult.NoCheck
     result = _check_suspicion(word)
-    global _checked_plural
-    _checked_plural = []
+    global _checked_inflected
+    _checked_inflected = []
     return result

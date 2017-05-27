@@ -66,6 +66,9 @@ class Test_glosbe(unittest.TestCase):
     def test_they(self):
         self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('they'))
 
+    def test_non(self):
+        self.assertEqual(DictResult.NotFound, abbreviation_glosbe.check_suspicion('non'))
+
     def test_tsk(self):
         self.assertEqual(DictResult.NoCheck, abbreviation_glosbe.check_suspicion('tsk'))
 
@@ -125,6 +128,13 @@ class Test_glosbe(unittest.TestCase):
             ]
         for word in words:
             self.assertNotEqual(DictResult.Found, abbreviation_glosbe.check_suspicion(word), word)
+
+    def test_past_found(self):
+        words = [
+            'ran',
+            ]
+        for word in words:
+            self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion(word), word)
 
     def test_plural_notfound(self):
         words = [

@@ -14,9 +14,19 @@ class IgnoreError(Exception):
     pass
 
 
-class PluralError(Exception):
+class InflectedError(Exception):
     def __init__(self, word):
         self.message = word
+
+
+class PluralError(InflectedError):
+    def __init__(self, word):
+        super(PluralError, self).__init__(word)
+
+
+class PastError(InflectedError):
+    def __init__(self, word):
+        super(PastError, self).__init__(word)
 
 
 class DictResult:
