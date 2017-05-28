@@ -121,6 +121,13 @@ class Test_glosbe(unittest.TestCase):
         for word in words:
             self.assertEqual(DictResult.NotFound, abbreviation_glosbe.check_suspicion(word), word)
 
+    def test_3word_found(self):
+        words = [
+            'has',
+            ]
+        for word in words:
+            self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion(word), word)
+
     def test_found_else(self):
         words = [
             'gis',

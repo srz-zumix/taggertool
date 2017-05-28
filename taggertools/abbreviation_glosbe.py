@@ -226,8 +226,13 @@ def _check_en(word, d, adict, optional):
         for ss in obsolete_of_starts:
             if text.startswith(ss):
                 raise IgnoreError
+
         if 'sound of' in text:
             raise IgnoreError
+
+        # Individual correspondence (has)
+        if 'indicative form of' in text:
+            return 3
 
         # inflected
         def check_inflected_of(starts):
