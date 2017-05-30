@@ -66,6 +66,9 @@ class Test_glosbe(unittest.TestCase):
     def test_they(self):
         self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('they'))
 
+    def test_did(self):
+        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('did'))
+
     def test_non(self):
         self.assertEqual(DictResult.NotFound, abbreviation_glosbe.check_suspicion('non'))
 

@@ -391,10 +391,16 @@ def _check_suspicion_impl(word, translate_word=None):
                 else:
                     score -= 5
             elif result == DictResult.Found:
-                if isinstance(e, PluralError) and inflected_word + 's' == word:
-                    return DictResult.Found
-                else:
-                    score += 1
+                if isinstance(e, PluralError):
+                    if inflected_word + 's' == word:
+                        return DictResult.Found
+                    else:
+                        score += 1
+                if isinstance(e, PastError):
+                    if inflected_word + 'ed' == word:
+                        return DictResult.Found
+                    else:
+                        score += 3
                     inflected_found .append(inflected_word)
             elif result == DictResult.NotFound:
                 pass
