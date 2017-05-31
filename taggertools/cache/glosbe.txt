@@ -198,7 +198,6 @@ initialize
 sett
 set
 flag
-mem
 leak
 dump
 handle
@@ -222,6 +221,7 @@ always
 invalid
 close
 dummy
+bite
 bit
 raw
 point
@@ -276,10 +276,10 @@ binder
 description
 withe
 with
-wat
 what
 translator
 code
+shall
 should
 through
 breakpoint
@@ -346,7 +346,6 @@ stop
 watch
 stopwatch
 year
-mon
 hour
 duration
 high
@@ -400,7 +399,6 @@ truncate
 all
 open
 mode
-pre
 seek
 clear
 beg
@@ -411,7 +409,6 @@ independent
 number
 newline
 success
-non
 passed
 succeeded
 nonfatally
@@ -501,7 +498,6 @@ except
 teardown
 timestamp
 successful
-hoc
 reserved
 behavior
 call
@@ -655,14 +651,12 @@ foo
 brace
 monadic
 baz
-gre
 localhost
 tool
 bugfix
 wrap
 indirect
 poll
-pow
 sin
 cos
 tan
@@ -701,6 +695,7 @@ query
 save
 security
 install
+spin
 span
 huge
 flush
@@ -734,7 +729,6 @@ focus
 presentation
 singleton
 punk
-iid
 texta
 virtualization
 required
@@ -788,7 +782,6 @@ gamma
 calibrate
 store
 cull
-tex
 managed
 rem
 usage
@@ -810,7 +803,6 @@ paste
 roundup
 brush
 compatible
-dib
 solid
 transparent
 scale
@@ -856,8 +848,8 @@ quaternion
 transpose
 determinant
 adjoint
-homogenous
 homogeneous
+homogenous
 frustum
 squad
 angle
@@ -866,7 +858,6 @@ average
 reflect
 refract
 eta
-abb
 fab
 qword
 radian
@@ -876,7 +867,6 @@ binomial
 logistic
 equiprobability
 specified
-asp
 computing
 redd
 red
@@ -903,6 +893,7 @@ world
 queue
 old
 increment
+take
 took
 too
 integer
@@ -983,7 +974,6 @@ view
 projection
 multiply
 stage
-col
 rot
 rotation
 yaw
@@ -1104,8 +1094,8 @@ pressed
 press
 exclude
 track
-klick
 click
+klick
 extent
 storage
 horizon
@@ -1123,7 +1113,6 @@ hover
 work
 recursion
 fine
-spin
 digit
 buddy
 form
@@ -1162,15 +1151,14 @@ revert
 semaphore
 pipe
 hatch
-elliptical
 elliptic
+elliptical
 polygon
 manual
 creation
 disposition
 protect
 maximum
-sam
 packed
 walker
 wait
@@ -1202,6 +1190,7 @@ removal
 sequential
 scan
 cylinder
+fare
 fore
 workshop
 cookie
@@ -1217,6 +1206,7 @@ implement
 explorer
 snapshot
 kernel
+bake
 book
 best
 place
@@ -1241,7 +1231,6 @@ compression
 dimension
 clog
 remote
-led
 camera
 speaker
 mute
@@ -1475,7 +1464,6 @@ extensibility
 reflection
 globalisation
 globalization
-ide
 prog
 hashtable
 tooltip
@@ -1588,6 +1576,7 @@ negate
 anon
 legacy
 scenario
+give
 given
 hub
 ever
@@ -1601,7 +1590,6 @@ stitch
 excessive
 splice
 recognise
-take
 unary
 nullary
 positional
@@ -1616,6 +1604,7 @@ populate
 cliche
 epsilon
 evaluated
+throw
 threw
 verbosity
 never
@@ -1671,7 +1660,6 @@ tilde
 ant
 unsuccessfully
 blah
-moe
 pet
 dog
 another
@@ -1702,7 +1690,6 @@ downcast
 arch
 partition
 email
-dup
 comparator
 linkage
 adaptor
@@ -1797,12 +1784,12 @@ effective
 annex
 cop
 neither
-nor
 against
 relational
 could
 arithmetical
 dereference
+forget
 forgotten
 modification
 overrun
@@ -1841,9 +1828,13 @@ were
 during
 deallocated
 slicing
+bere
+bear
 bare
 usually
+break
 broken
+know
 known
 bracket
 followed
@@ -1865,7 +1856,6 @@ upon
 deallocating
 many
 goes
-forget
 deallocate
 obsolete
 loss
@@ -1907,8 +1897,8 @@ according
 promotion
 implementation
 such
-practise
 practice
+practise
 promotes
 able
 had
@@ -1927,7 +1917,6 @@ efficient
 involves
 likely
 equivalent
-gnu
 invalidation
 together
 adjacent
@@ -1993,7 +1982,6 @@ octal
 scientific
 developer
 quotation
-bom
 unify
 enforced
 backslash
@@ -2107,7 +2095,6 @@ compensation
 optimize
 coherent
 accumulate
-rng
 covariate
 specific
 bag
@@ -2141,7 +2128,6 @@ spirit
 stag
 underscore
 colon
-att
 ideographic
 windup
 standalone
@@ -2213,7 +2199,6 @@ rollback
 deprecate
 insertion
 burst
-nat
 blocklist
 piecewise
 emulation
@@ -2227,6 +2212,7 @@ cod
 exceeded
 newly
 cost
+heal
 hole
 diff
 tab
@@ -2236,9 +2222,7 @@ violated
 fractional
 weekday
 mar
-jun
 adapted
-adj
 phrase
 dhow
 dow
@@ -2310,6 +2294,7 @@ lex
 bidirectional
 flyweight
 pend
+eat
 ate
 ill
 few
@@ -2325,18 +2310,15 @@ prologue
 unusable
 parm
 return
-rethrow
 nonnull
 variation
 autodetect
 defining
 mod
-cha
 char
 charr
 ell
 deeply
-eat
 nest
 nonmember
 synthesize
@@ -2392,7 +2374,6 @@ occupation
 incoming
 outgoing
 corresponds
-soo
 occupied
 defensive
 spike
@@ -2410,8 +2391,8 @@ enrichment
 follow
 traverse
 staying
-neighboring
 neighbouring
+neighboring
 preceding
 robustness
 issue
@@ -2438,7 +2419,6 @@ geographic
 polar
 volumetric
 topological
-ith
 filtered
 sliced
 wise
@@ -2617,7 +2597,6 @@ tossed
 vend
 discovery
 dominator
-dom
 ancestor
 buck
 iterative
@@ -2630,9 +2609,7 @@ topology
 grid
 jitter
 gum
-gom
 gam
-eam
 immutable
 isomorphism
 multigraph
@@ -2644,7 +2621,6 @@ maxed
 precalculate
 learning
 circuit
-dis
 improve
 vie
 optimum
@@ -2695,6 +2671,7 @@ externally
 chose
 internally
 glue
+forbid
 forbidden
 goal
 alternating
@@ -2815,7 +2792,6 @@ bogus
 exceeding
 protectable
 formal
-throw
 nonrecursive
 facility
 kana
@@ -2859,17 +2835,15 @@ exceed
 limitation
 decoration
 decor
-rex
 frontend
 asynchronous
-met
+dedicate
 dedicated
 interruption
 enqueue
 dequeue
 concurrent
 demand
-lev
 synchronous
 emergency
 alert
@@ -2932,7 +2906,6 @@ gaussian
 implies
 overthrow
 newton
-ess
 converge
 sensible
 ding
@@ -2946,7 +2919,6 @@ cylindrical
 operating
 affecter
 airy
-agh
 tiny
 asymptotic
 amplitude
@@ -2969,7 +2941,6 @@ conforming
 nonfinite
 accelerated
 taylor
-break
 harmonic
 leg
 buggy
@@ -2990,9 +2961,7 @@ caution
 gross
 periodic
 basis
-dat
 particular
-giving
 secant
 interpolate
 cubic
@@ -3006,7 +2975,6 @@ finalized
 nonblocking
 outstanding
 land
-bor
 pickle
 pivot
 introspect
@@ -3030,7 +2998,6 @@ topic
 introspection
 posit
 plural
-ident
 den
 beedi
 bidi
@@ -3072,7 +3039,6 @@ improperly
 undefine
 misplaced
 consist
-give
 instream
 autoselect
 underlying
@@ -3089,11 +3055,9 @@ concatenation
 compilation
 flex
 cow
-emf
 entire
 subtype
 aft
-lcm
 crypt
 silent
 parenthetic
@@ -3130,7 +3094,6 @@ yard
 furlong
 grain
 hundredweight
-cwt
 inch
 league
 mile
@@ -3141,7 +3104,6 @@ hartley
 hart
 angstrom
 atmosphere
-atm
 pressure
 barn
 fermi
@@ -3159,7 +3121,6 @@ luminous
 kelvin
 temperature
 mole
-mol
 fahrenheit
 cup
 dram
@@ -3200,8 +3161,8 @@ resistivity
 stress
 tension
 thermal
-torc
 torque
+torc
 wavenumber
 nabs
 dab
@@ -3228,7 +3189,6 @@ coulomb
 siemens
 hertz
 volt
-ohm
 electron
 helion
 muon
@@ -3236,16 +3196,11 @@ neutron
 chemical
 watt
 triton
-mho
 sievert
-lux
 henry
 khat
-kat
 lumen
-gen
 organizer
-modifier
 byname
 selfish
 destructible
@@ -3254,8 +3209,6 @@ testee
 trivially
 oracle
 usable
-qualifier
-binding
 inject
 addible
 addable
@@ -3268,8 +3221,6 @@ iterable
 axe
 checkpoint
 confirmation
-warning
-macro
 catchall
 finalize
 deregister
@@ -3285,7 +3236,6 @@ bus
 existent
 alarm
 involving
-filter
 decision
 occurrence
 inst
@@ -3308,12 +3258,10 @@ easier
 automation
 repeatable
 several
-setting
 identify
 facilitates
 relying
 well
-amb
 typo
 minimal
 indirection
@@ -3323,5 +3271,4 @@ debuggable
 enumeration
 correspond
 blink
-hup
 they
