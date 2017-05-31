@@ -147,6 +147,13 @@ class Test_glosbe(unittest.TestCase):
         for word in words:
             self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion(word), word)
 
+    def test_plural_found(self):
+        words = [
+            'these',
+            ]
+        for word in words:
+            self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion(word), word)
+
     def test_plural_notfound(self):
         words = [
             'zos',

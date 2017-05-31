@@ -401,7 +401,7 @@ def _check_suspicion_impl(word, translate_word=None):
                         return DictResult.Found
                     else:
                         score += 3
-                    inflected_found .append(inflected_word)
+                inflected_found .append(inflected_word)
             elif result == DictResult.NotFound:
                 pass
             elif result == DictResult.NoCheck:
@@ -416,10 +416,10 @@ def _check_suspicion_impl(word, translate_word=None):
         if misspelling and score < 2:
             return DictResult.Misspelling
 
-        if score > 2:
-            cache.add_cache('glosbe', word)
-            return DictResult.Found
-        if len(word) > 3 and master_dicts:
+        threshold_score = 0
+        if len(word) <= 3:
+            threshold_score = 2
+        if score > threshold_score:
             cache.add_cache('glosbe', word)
             return DictResult.Found
         if len(tuc) > 20:
