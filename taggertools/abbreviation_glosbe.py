@@ -367,7 +367,7 @@ def _check_suspicion_impl(word, translate_word=None):
             if _has_ja_meaings_or_phrase(t):
                 ja_count += 1
             # 信頼する辞書だけ使う
-            if any(x in [1, 84, 2736, 93369] for x in t['authors']):
+            if any(x in [1, 84, 93369] for x in t['authors']):
                 master_dicts.append(t)
             # それ以外の辞書のうち略語判定のみに使用
             elif any(x in [91945] for x in t['authors']):
