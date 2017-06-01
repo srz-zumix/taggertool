@@ -398,7 +398,7 @@ def _check_suspicion_impl(word, translate_word=None):
                     else:
                         score += 1
                 if isinstance(e, PastError):
-                    if inflected_word + 'ed' == word:
+                    if inflected_word + 'ed' == word or inflected_word[:-1] + 'ed' == word:
                         return DictResult.Found
                     else:
                         score += 3
@@ -420,6 +420,8 @@ def _check_suspicion_impl(word, translate_word=None):
         threshold_score = 0
         if len(word) <= 3:
             threshold_score = 2
+        elif len(word) <= 4:
+            threshold_score = 1
         if score > threshold_score:
             cache.add_cache('glosbe', word)
             return DictResult.Found
