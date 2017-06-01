@@ -24,7 +24,8 @@ _global_ignore_list = [
     ]
 
 def isascii(s):
-    return max([ord(char) for char in s]) < 128
+    if s:
+        return max([ord(char) for char in s]) < 128
 
 
 _r_html_special_char = re.compile('&[#|\w]+;')
