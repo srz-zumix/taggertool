@@ -171,3 +171,6 @@ grad
 gal
 funct
 instructs
+subj
+pred
+attrib
