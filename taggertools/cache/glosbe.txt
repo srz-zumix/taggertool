@@ -432,7 +432,6 @@ next
 distance
 difference
 sort
-curr
 sum
 over
 trace
@@ -457,7 +456,6 @@ different
 text
 succeed
 fail
-todo
 generate
 but
 already
@@ -848,8 +846,8 @@ quaternion
 transpose
 determinant
 adjoint
-homogeneous
 homogenous
+homogeneous
 frustum
 squad
 angle
@@ -1021,14 +1019,12 @@ standard
 transition
 play
 measure
-riff
 primary
 coop
 wave
 duplicate
 original
 priority
-paan
 pan
 frequency
 profile
@@ -1094,8 +1090,8 @@ pressed
 press
 exclude
 track
-click
 klick
+click
 extent
 storage
 horizon
@@ -1151,8 +1147,8 @@ revert
 semaphore
 pipe
 hatch
-elliptic
 elliptical
+elliptic
 polygon
 manual
 creation
@@ -1468,7 +1464,6 @@ prog
 hashtable
 tooltip
 toolbar
-guid
 assembly
 dispose
 perform
@@ -1650,7 +1645,6 @@ inclusion
 exclusion
 nanosecond
 insertable
-borg
 necessary
 incomplete
 deepest
@@ -1663,7 +1657,6 @@ blah
 pet
 dog
 another
-meta
 implicitly
 intercept
 manipulator
@@ -1828,7 +1821,6 @@ were
 during
 deallocated
 slicing
-bere
 bear
 bare
 usually
@@ -1897,8 +1889,8 @@ according
 promotion
 implementation
 such
-practice
 practise
+practice
 promotes
 able
 had
@@ -2036,7 +2028,6 @@ derivation
 friendship
 complete
 gear
-cray
 prior
 juxtaposing
 detection
@@ -2163,7 +2154,6 @@ divisible
 interprocess
 imp
 treat
-nano
 intermediate
 reduce
 pat
@@ -2245,7 +2235,6 @@ coordinated
 delimited
 ice
 tod
-coll
 tenth
 hundredth
 ten
@@ -2266,7 +2255,6 @@ toward
 nearest
 absent
 tinyness
-imin
 dig
 then
 choice
@@ -2308,7 +2296,6 @@ asterisk
 defined
 prologue
 unusable
-parm
 return
 nonnull
 variation
@@ -2331,7 +2318,6 @@ specialize
 adapt
 redefine
 nonempty
-qual
 auxiliary
 again
 car
@@ -2391,8 +2377,8 @@ enrichment
 follow
 traverse
 staying
-neighbouring
 neighboring
+neighbouring
 preceding
 robustness
 issue
@@ -2543,7 +2529,6 @@ triple
 decorator
 tau
 compliment
-aval
 seen
 junk
 locally
@@ -2633,7 +2618,6 @@ derivative
 cubed
 tolerance
 energy
-qing
 king
 percolate
 drifter
@@ -2672,7 +2656,6 @@ chose
 internally
 glue
 forbid
-forbidden
 goal
 alternating
 distinguished
@@ -2760,7 +2743,6 @@ supposed
 destiny
 concrete
 clast
-trie
 dual
 seekable
 flushable
@@ -2838,7 +2820,6 @@ decor
 frontend
 asynchronous
 dedicate
-dedicated
 interruption
 enqueue
 dequeue
@@ -3077,7 +3058,6 @@ revolution
 steradian
 astronomical
 parsec
-biot
 ampere
 centimeter
 gram
@@ -3161,10 +3141,9 @@ resistivity
 stress
 tension
 thermal
-torque
 torc
+torque
 wavenumber
-nabs
 dab
 centimetre
 poise
@@ -3238,7 +3217,6 @@ alarm
 involving
 decision
 occurrence
-inst
 rever
 periphery
 dotted
@@ -3262,7 +3240,6 @@ identify
 facilitates
 relying
 well
-typo
 minimal
 indirection
 lexicographic
@@ -3277,7 +3254,6 @@ integrity
 busy
 inappropriate
 retry
-apis
 insufficient
 destruction
 advertise
@@ -3285,7 +3261,6 @@ revoked
 halt
 syncronized
 anode
-user
 trashed
 statechart
 scheduler
@@ -3295,14 +3270,10 @@ fallthrough
 proposed
 dismiss
 innermost
-constructor
-actor
 parametric
 embed
 inhibit
 longest
-helper
-parser
 subrule
 rid
 pizza
@@ -3310,7 +3281,6 @@ favorite
 unregister
 parsable
 switch
-switches
 assertive
 ahead
 refactoring
@@ -3318,7 +3288,6 @@ won
 latest
 successfully
 karma
-modifier
 exposed
 endianness
 delimit
@@ -3328,7 +3297,6 @@ omit
 verbatim
 home
 nonterminal
-tokenizer
 accompanying
 alphabet
 minimise
@@ -3370,11 +3338,9 @@ thai
 cuneiform
 alphanumeric
 silence
-warning
 optimise
 regex
 regexes
-macro
 serialise
 coverage
 enum
@@ -3402,4 +3368,3 @@ invokable
 janitor
 weakly
 trackable
-header
