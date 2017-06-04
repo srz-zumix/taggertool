@@ -178,3 +178,9 @@ cust
 www
 aout
 wrt
+pwr
+mic
+abo
+dif
+perp
+decon
