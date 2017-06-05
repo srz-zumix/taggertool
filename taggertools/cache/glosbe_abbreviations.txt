@@ -184,3 +184,8 @@ abo
 dif
 perp
 decon
+obs
+expo
+herm
+pres
+fml
