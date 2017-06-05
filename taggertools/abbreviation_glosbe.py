@@ -83,7 +83,7 @@ def _check_en(word, d, adict, optional):
         if tag in ['obsolete', 'cockney rhyming slang', 'slang', 'nonstandard', 'archaic', 'mostly uncountable']:
             # スラング or すたれた ものは除外
             raise IgnoreError
-        if tag in ['of champagne', 'golf', 'anthropology']:
+        if tag in ['of champagne', 'golf', 'anthropology', 'music']:
             # その他、品種で除外
             raise IgnoreError
     # cockney rhyming slang
