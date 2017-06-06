@@ -72,6 +72,9 @@ class Test_glosbe(unittest.TestCase):
     def test_non(self):
         self.assertEqual(DictResult.NotFound, abbreviation_glosbe.check_suspicion('non'))
 
+    def test_lev(self):
+        self.assertEqual(DictResult.NotFound, abbreviation_glosbe.check_suspicion('lev'))
+
     def test_tsk(self):
         self.assertEqual(DictResult.NoCheck, abbreviation_glosbe.check_suspicion('tsk'))
 

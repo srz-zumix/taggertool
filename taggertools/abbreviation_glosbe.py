@@ -220,11 +220,14 @@ def _check_en(word, d, adict, optional):
             if check_alternative_of(ss, False):
                 return -2
 
-        obsolete_of_starts = [
+        ignore_starts = [
             'obsolete spelling of',
             'obsolete form of',
+            'currency of',
+            'the currency of',
+            'the basic unit of money in',
         ]
-        for ss in obsolete_of_starts:
+        for ss in ignore_starts:
             if text.startswith(ss):
                 raise IgnoreError
 
