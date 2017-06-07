@@ -190,3 +190,8 @@ herm
 pres
 fml
 prereq
+pyx
+pix
+srs
+lat
+lab
