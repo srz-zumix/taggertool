@@ -75,6 +75,9 @@ class Test_glosbe(unittest.TestCase):
     def test_lev(self):
         self.assertEqual(DictResult.NotFound, abbreviation_glosbe.check_suspicion('lev'))
 
+    def test_cee(self):
+        self.assertEqual(DictResult.NotFound, abbreviation_glosbe.check_suspicion('cee'))
+
     def test_tsk(self):
         self.assertEqual(DictResult.NoCheck, abbreviation_glosbe.check_suspicion('tsk'))
 
@@ -190,6 +193,14 @@ class Test_glosbe(unittest.TestCase):
             ]
         for word in words:
             self.assertEqual(DictResult.Misspelling, abbreviation_glosbe.check_suspicion(word), word)
+
+    @unittest.skip("todo")
+    def test_todo(self):
+        words = [
+            'resid',
+            ]
+        for word in words:
+            self.assertEqual(DictResult.NotFound, abbreviation_glosbe.check_suspicion(word), word)
 
 #    def test_2736(self):
 #        words = [

@@ -226,6 +226,9 @@ def _check_en(word, d, adict, optional):
             'currency of',
             'the currency of',
             'the basic unit of money in',
+            'name of the letter',
+            'something shaped like the letter',
+            'the name of the Latin script letter',
         ]
         for ss in ignore_starts:
             if text.startswith(ss):
