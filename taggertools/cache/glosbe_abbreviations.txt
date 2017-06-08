@@ -5,7 +5,6 @@ kat
 gen
 pseudo
 percent
-stale
 cgs
 ref
 paren
