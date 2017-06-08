@@ -486,12 +486,13 @@ def check_suspicion(word):
     # 略語リストにあったら即アウト
     if cache.is_abbreviation(word):
         return DictResult.Abbreviation
-    # 接尾辞
-    if not is_suspicion_post_suffix(word, length):
-        return DictResult.Found
-    # 接頭辞
-    if not is_suspicion_pre_suffix(word, length):
-        return DictResult.Found
+    if not options.cache_rebuild:
+        # 接尾辞
+        if not is_suspicion_post_suffix(word, length):
+            return DictResult.Found
+        # 接頭辞
+        if not is_suspicion_pre_suffix(word, length):
+            return DictResult.Found
     # Web API
     if options.glosbe:
         try:
