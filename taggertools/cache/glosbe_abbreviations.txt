@@ -195,3 +195,11 @@ pix
 srs
 lat
 lab
+wer
+accel
+vers
+sis
+acct
+cred
+appx
+hundreth
