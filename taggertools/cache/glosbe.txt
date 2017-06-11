@@ -3975,3 +3975,17 @@ morris
 prat
 dissect
 rope
+gnu
+macro
+specifier
+debugger
+user
+binding
+unparsable
+setting
+receiver
+sender
+filter
+stale
+simultaneous
+processor
