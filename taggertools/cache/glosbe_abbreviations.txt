@@ -204,3 +204,5 @@ appx
 hundreth
 sat
 gens
+precalc
+idd

@@ -11,6 +11,8 @@ __forceinline
 _beginthread
 _beginthreadex
 _call_reportfault
+_targc
+_targv
 _tcscat
 _tcschr
 _tcscpy

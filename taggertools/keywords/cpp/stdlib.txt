@@ -514,6 +514,7 @@ wcsspn
 wcsstr
 wcstod
 wcstof
+wcstombs
 wctype
 weof
 wfilebuf
