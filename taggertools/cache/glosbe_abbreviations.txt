@@ -206,3 +206,5 @@ sat
 gens
 precalc
 idd
+mins
+aka
