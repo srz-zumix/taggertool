@@ -208,3 +208,10 @@ precalc
 idd
 mins
 aka
+deb
+gif
+wos
+tmr
+hist
+yout
+arb
