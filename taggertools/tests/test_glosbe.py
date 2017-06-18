@@ -78,6 +78,9 @@ class Test_glosbe(unittest.TestCase):
     def test_cee(self):
         self.assertEqual(DictResult.NotFound, abbreviation_glosbe.check_suspicion('cee'))
 
+    def test_kpm(self):
+        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('kpm'))
+
     def test_tsk(self):
         self.assertEqual(DictResult.NoCheck, abbreviation_glosbe.check_suspicion('tsk'))
 

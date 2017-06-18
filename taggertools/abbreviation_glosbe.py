@@ -47,6 +47,16 @@ def _normalize_dict_text(text):
     return text
 
 
+def _check_all_initials(word, text):
+    split_texts = text.split()
+    if not len(word) == len(split_texts):
+        return False
+    for i in range(0, len(word)):
+        if not word[i] == split_texts[i][0]:
+            return False
+    return True
+
+
 _r_glosbe_tag = re.compile('^\(([a-zA-Z,\s]*)\)(.*)')
 _r_cockney_slang = re.compile('.*slang.*\[from [0-9]+th c\.\].*')
 def _check_en(word, d, adict, optional):
@@ -282,6 +292,10 @@ def _check_en(word, d, adict, optional):
                     return find_value * 2
                 elif r == DictResult.Abbreviation:
                     return -4
+        # 
+        if _check_all_initials(word, text):
+            return -5
+
     return find_value
 
 

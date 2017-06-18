@@ -276,6 +276,7 @@ binder
 description
 withe
 with
+wat
 what
 translator
 code
@@ -846,8 +847,8 @@ quaternion
 transpose
 determinant
 adjoint
-homogenous
 homogeneous
+homogenous
 frustum
 squad
 angle
@@ -1090,8 +1091,8 @@ pressed
 press
 exclude
 track
-klick
 click
+klick
 extent
 storage
 horizon
@@ -1147,8 +1148,8 @@ revert
 semaphore
 pipe
 hatch
-elliptical
 elliptic
+elliptical
 polygon
 manual
 creation
@@ -1889,8 +1890,8 @@ according
 promotion
 implementation
 such
-practise
 practice
+practise
 promotes
 able
 had
@@ -2377,8 +2378,8 @@ enrichment
 follow
 traverse
 staying
-neighboring
 neighbouring
+neighboring
 preceding
 robustness
 issue
@@ -3141,8 +3142,8 @@ resistivity
 stress
 tension
 thermal
-torc
 torque
+torc
 wavenumber
 dab
 centimetre
@@ -3400,8 +3401,8 @@ power
 writeable
 iota
 customization
-mitre
 miter
+mitre
 demote
 parr
 euclidian
@@ -3976,7 +3977,6 @@ prat
 dissect
 rope
 gnu
-macro
 specifier
 debugger
 user
@@ -3987,7 +3987,6 @@ receiver
 sender
 filter
 stale
-simultaneous
 processor
 printer
 shorter
