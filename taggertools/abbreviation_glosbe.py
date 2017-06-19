@@ -93,7 +93,7 @@ def _check_en(word, d, adict, optional):
         if tag in ['obsolete', 'cockney rhyming slang', 'slang', 'nonstandard', 'archaic', 'mostly uncountable']:
             # スラング or すたれた ものは除外
             raise IgnoreError
-        if tag in ['of champagne', 'golf', 'anthropology', 'music']:
+        if tag in ['of champagne', 'golf', 'anthropology', 'music', 'baseball']:
             # その他、品種で除外
             raise IgnoreError
     # cockney rhyming slang
@@ -239,6 +239,7 @@ def _check_en(word, d, adict, optional):
             'name of the letter',
             'something shaped like the letter',
             'the name of the Latin script letter',
+            'plant, member of'
         ]
         for ss in ignore_starts:
             if text.startswith(ss):
