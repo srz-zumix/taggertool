@@ -235,3 +235,5 @@ ser
 nom
 reno
 circ
+combi
+sta
