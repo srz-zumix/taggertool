@@ -58,7 +58,8 @@ def _check_all_initials(word, text):
 
 
 _r_glosbe_tag = re.compile('^\(([a-zA-Z,\s]*)\)(.*)')
-_r_cockney_slang = re.compile('.*slang.*\[from [0-9]+th c\.\].*')
+#_r_cockney_slang = re.compile('.*slang.*\[from [0-9]+th c\.\].*')
+_r_slang = re.compile('.*\Wslang\W.*')
 def _check_en(word, d, adict, optional):
     text = d['text']
     # タグから除外
@@ -79,6 +80,10 @@ def _check_en(word, d, adict, optional):
 
     find_value = 1
 
+    # 不適切な言葉は点数下げる
+    if 'sex' == text:
+        return -10
+
     # タグをチェック
     for tag in tags:
         tag = tag.strip()
@@ -93,16 +98,22 @@ def _check_en(word, d, adict, optional):
         if tag in ['obsolete', 'cockney rhyming slang', 'slang', 'nonstandard', 'archaic', 'mostly uncountable']:
             # スラング or すたれた ものは除外
             raise IgnoreError
-        if tag in ['of champagne', 'golf', 'anthropology', 'music', 'baseball']:
+        if tag in ['of champagne', 'golf', 'anthropology', 'music', 'baseball', 'zoology']:
             # その他、品種で除外
             raise IgnoreError
     # cockney rhyming slang
-    if _r_cockney_slang.match(text):
+#    if _r_cockney_slang.match(text):
+#        raise IgnoreError
+    if _r_slang.match(text):
         raise IgnoreError
     if text.startswith('spanish,'):
         raise IgnoreError
     if text.startswith('roman alphabet'):
         raise IgnoreError
+
+    # ゴミ？
+    if 'dust' == text:
+        return -1
 
     def check_one_word(text):
         # 完全一致したら略語じゃない
@@ -118,16 +129,16 @@ def _check_en(word, d, adict, optional):
             if text[-2:] == 'ly' and diff == 2:
                 return DictResult.Found
             return DictResult.Abbreviation
+        # 
+        if len(word) < 4:
+            if word in text:
+                return DictResult.Abbreviation
         # 複数系の確認
         if text[-1:] == 's' and word[-1:] == 's':
             if text.startswith(word[:-1]):
                 return DictResult.Abbreviation
         return DictResult.NotFound
 
-
-    # ゴミ？
-    if 'dust' == text:
-        return -1
     split_texts = re.split('\s|-', text, 3)
     # 1 or 2単語のみの場合
     if len(split_texts) <= 2:
