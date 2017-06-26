@@ -95,6 +95,8 @@ def _check_en(word, d, adict, optional):
             desc = m.group(2).lower().strip()
             if re.match('^(a\s|)' + word + '\w', desc):
                 return -5
+        if tag in ['colloquial']:
+            return -5
         if tag in ['obsolete', 'cockney rhyming slang', 'slang', 'nonstandard', 'archaic', 'mostly uncountable']:
             # スラング or すたれた ものは除外
             raise IgnoreError

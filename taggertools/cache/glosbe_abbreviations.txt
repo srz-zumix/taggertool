@@ -240,3 +240,6 @@ circ
 combi
 sta
 sci
+decim
+prom
+eva
