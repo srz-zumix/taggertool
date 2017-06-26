@@ -59,7 +59,7 @@ def _check_all_initials(word, text):
 
 _r_glosbe_tag = re.compile('^\(([a-zA-Z,\s]*)\)(.*)')
 #_r_cockney_slang = re.compile('.*slang.*\[from [0-9]+th c\.\].*')
-_r_slang = re.compile('.*\Wslang\W.*')
+_r_slang = re.compile('^(|.*[^A-Za-z])slang[^A-Za-z].*')
 def _check_en(word, d, adict, optional):
     text = d['text']
     # タグから除外

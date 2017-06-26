@@ -78,6 +78,9 @@ class Test_glosbe(unittest.TestCase):
     def test_cee(self):
         self.assertEqual(DictResult.NotFound, abbreviation_glosbe.check_suspicion('cee'))
 
+    def test_meh(self):
+        self.assertEqual(DictResult.NotFound, abbreviation_glosbe.check_suspicion('meh'))
+
     def test_ass(self):
         self.assertNotEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('ass'))
 
