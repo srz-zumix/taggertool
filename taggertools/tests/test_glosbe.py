@@ -123,6 +123,14 @@ class Test_glosbe(unittest.TestCase):
         for word in words:
             self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion(word), word)
 
+    def test_colloquial(self):
+        words = [
+            'something',
+            'everything',
+            ]
+        for word in words:
+            self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion(word), word)
+
     def test_abbreviation(self):
         words = [
             'abs',
