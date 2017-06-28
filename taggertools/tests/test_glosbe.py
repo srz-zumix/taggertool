@@ -139,6 +139,7 @@ class Test_glosbe(unittest.TestCase):
             'max',
             'neg',
             'par',
+            'reno',
             'sec',
             'seg',
             'sig',

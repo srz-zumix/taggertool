@@ -96,7 +96,7 @@ def _check_en(word, d, adict, optional):
             if re.match('^(a\s|)' + word + '\w', desc):
                 return -5
         if tag in ['colloquial']:
-            raise IgnoreError
+            find_value = 0
         if tag in ['obsolete', 'cockney rhyming slang', 'slang', 'nonstandard', 'archaic', 'mostly uncountable']:
             # スラング or すたれた ものは除外
             raise IgnoreError
@@ -253,6 +253,7 @@ def _check_en(word, d, adict, optional):
             'something shaped like the letter',
             'the name of the Latin script letter',
             'plant, member of'
+            'an expression of'
         ]
         for ss in ignore_starts:
             if text.startswith(ss):
