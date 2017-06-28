@@ -175,6 +175,7 @@ def _check_en(word, d, adict, optional):
             'abbreviated form of',
             'short for',
             'short from for',
+            'short form of',
             'shortened form of',
             'clipped form of',
         ]
@@ -453,14 +454,17 @@ def _check_suspicion_impl(word, translate_word=None):
             return DictResult.Misspelling
 
         threshold_score = 0
+        threshold_tuc_count = 20
         if len(word) <= 3:
             threshold_score = 2
+            threshold_tuc_count = 30
         elif len(word) <= 4:
             threshold_score = 1
+            threshold_tuc_count = 25
         if score > threshold_score:
             cache.add_cache('glosbe', word)
             return DictResult.Found
-        if len(tuc) > 20:
+        if len(tuc) > threshold_tuc_count:
             cache.add_cache('glosbe', word)
             return DictResult.Found
 

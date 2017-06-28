@@ -90,6 +90,9 @@ class Test_glosbe(unittest.TestCase):
     def test_flu(self):
         self.assertEqual(DictResult.Abbreviation, abbreviation_glosbe.check_suspicion('flu'))
 
+    def test_fib(self):
+        self.assertNotEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('fib'))
+
     def test_kpm(self):
         self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('kpm'))
 
