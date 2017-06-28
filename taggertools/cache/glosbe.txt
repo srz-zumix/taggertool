@@ -846,8 +846,8 @@ quaternion
 transpose
 determinant
 adjoint
-homogenous
 homogeneous
+homogenous
 frustum
 squad
 angle
@@ -1090,8 +1090,8 @@ pressed
 press
 exclude
 track
-klick
 click
+klick
 extent
 storage
 horizon
@@ -1147,8 +1147,8 @@ revert
 semaphore
 pipe
 hatch
-elliptical
 elliptic
+elliptical
 polygon
 manual
 creation
@@ -1889,8 +1889,8 @@ according
 promotion
 implementation
 such
-practise
 practice
+practise
 promotes
 able
 had
@@ -2377,8 +2377,8 @@ enrichment
 follow
 traverse
 staying
-neighboring
 neighbouring
+neighboring
 preceding
 robustness
 issue
@@ -2758,7 +2758,6 @@ decompress
 grep
 gzip
 deflate
-phat
 fat
 atari
 acorn
@@ -3141,8 +3140,8 @@ resistivity
 stress
 tension
 thermal
-torc
 torque
+torc
 wavenumber
 dab
 centimetre
@@ -3400,8 +3399,8 @@ power
 writeable
 iota
 customization
-mitre
 miter
+mitre
 demote
 parr
 euclidian
@@ -4312,7 +4311,6 @@ planned
 everything
 went
 bonjour
-bonheur
 truncation
 misbehaved
 padding
@@ -4558,7 +4556,6 @@ nonshared
 expensive
 tend
 disperse
-macro
 jack
 linefeed
 inflate
@@ -4665,7 +4662,6 @@ guinea
 pearl
 bosom
 vain
-tissy
 paid
 sigh
 sold
@@ -4689,8 +4685,6 @@ multipart
 ending
 indirectly
 erroneous
-meh
-yay
 easy
 ires
 salary
