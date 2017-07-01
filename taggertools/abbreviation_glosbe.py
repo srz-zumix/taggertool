@@ -97,6 +97,8 @@ def _check_en(word, d, adict, optional):
                 return -5
         if tag in ['colloquial']:
             find_value = 0
+        if tag in ['chiefly us', 'chiefly uk']:
+            raise IgnoreError
         if tag in ['obsolete', 'cockney rhyming slang', 'slang', 'nonstandard', 'archaic', 'mostly uncountable']:
             # スラング or すたれた ものは除外
             raise IgnoreError
@@ -253,8 +255,10 @@ def _check_en(word, d, adict, optional):
             'name of the letter',
             'something shaped like the letter',
             'the name of the Latin script letter',
-            'plant, member of'
-            'an expression of'
+            'plant, member of',
+            'expression of',
+            'pet form of',
+            'common nickname for',
         ]
         for ss in ignore_starts:
             if text.startswith(ss):
