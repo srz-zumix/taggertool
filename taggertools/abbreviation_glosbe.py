@@ -259,6 +259,8 @@ def _check_en(word, d, adict, optional):
             'expression of',
             'pet form of',
             'common nickname for',
+            'diminutive of the female given name',
+            'diminutive of the male given name',
         ]
         for ss in ignore_starts:
             if text.startswith(ss):
