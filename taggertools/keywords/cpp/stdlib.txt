@@ -220,6 +220,7 @@ isprint
 ispunct
 isspace
 istream
+istreambuf_iterator
 istringstream
 isupper
 iswspacet
