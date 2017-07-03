@@ -102,7 +102,7 @@ def _check_en(word, d, adict, optional):
         if tag in ['obsolete', 'cockney rhyming slang', 'slang', 'nonstandard', 'archaic', 'mostly uncountable']:
             # スラング or すたれた ものは除外
             raise IgnoreError
-        if tag in ['of champagne', 'golf', 'anthropology', 'music', 'baseball', 'zoology', 'french']:
+        if tag in ['of champagne', 'golf', 'anthropology', 'music', 'baseball', 'cricket', 'zoology', 'french']:
             # その他、品種で除外
             raise IgnoreError
     # cockney rhyming slang
@@ -254,6 +254,7 @@ def _check_en(word, d, adict, optional):
             'the basic unit of money in',
             'name of the letter',
             'something shaped like the letter',
+            'something with the shaped of the letter',
             'the name of the Latin script letter',
             'plant, member of',
             'expression of',
@@ -266,8 +267,14 @@ def _check_en(word, d, adict, optional):
             if text.startswith(ss):
                 raise IgnoreError
 
-        if 'sound of' in text:
-            raise IgnoreError
+        ignore_include = [
+            'sound of',
+            'shaped of the letter',
+            'name of the latin-script letter',
+        ]
+        for ss in ignore_include:
+            if ss in text:
+                raise IgnoreError
 
         # Individual correspondence (has)
         if 'indicative form of' in text:

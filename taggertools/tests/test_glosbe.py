@@ -69,6 +69,12 @@ class Test_glosbe(unittest.TestCase):
     def test_did(self):
         self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('did'))
 
+    def test_kpm(self):
+        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('kpm'))
+
+#    def test_pea(self):
+#        self.assertEqual(DictResult.Abbreviation, abbreviation_glosbe.check_suspicion('pea'))
+
     def test_non(self):
         self.assertEqual(DictResult.NotFound, abbreviation_glosbe.check_suspicion('non'))
 
@@ -99,11 +105,8 @@ class Test_glosbe(unittest.TestCase):
     def test_joe(self):
         self.assertNotEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('joe'))
 
-    def test_kpm(self):
-        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('kpm'))
-
-#    def test_pea(self):
-#        self.assertEqual(DictResult.Abbreviation, abbreviation_glosbe.check_suspicion('pea'))
+    def test_vee(self):
+        self.assertNotEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('vee'))
 
     def test_tsk(self):
         self.assertEqual(DictResult.NoCheck, abbreviation_glosbe.check_suspicion('tsk'))
