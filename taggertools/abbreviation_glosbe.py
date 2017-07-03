@@ -102,7 +102,11 @@ def _check_en(word, d, adict, optional):
         if tag in ['obsolete', 'cockney rhyming slang', 'slang', 'nonstandard', 'archaic', 'mostly uncountable']:
             # スラング or すたれた ものは除外
             raise IgnoreError
-        if tag in ['of champagne', 'golf', 'anthropology', 'music', 'baseball', 'cricket', 'zoology', 'french']:
+        if tag in ['of champagne', 'golf', 'anthropology', 'music',
+                   'baseball', 'cricket', 
+                   'architecture', 'zoology', 'anatomy', 'botany',
+                   'french', 'scottish', 'northern england',
+                   ]:
             # その他、品種で除外
             raise IgnoreError
     # cockney rhyming slang
@@ -262,6 +266,7 @@ def _check_en(word, d, adict, optional):
             'common nickname for',
             'diminutive of the female given name',
             'diminutive of the male given name',
+            'son of',
         ]
         for ss in ignore_starts:
             if text.startswith(ss):
