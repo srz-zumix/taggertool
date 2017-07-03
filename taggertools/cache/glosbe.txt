@@ -846,8 +846,8 @@ quaternion
 transpose
 determinant
 adjoint
-homogeneous
 homogenous
+homogeneous
 frustum
 squad
 angle
@@ -1090,8 +1090,8 @@ pressed
 press
 exclude
 track
-click
 klick
+click
 extent
 storage
 horizon
@@ -1147,8 +1147,8 @@ revert
 semaphore
 pipe
 hatch
-elliptic
 elliptical
+elliptic
 polygon
 manual
 creation
@@ -1889,8 +1889,8 @@ according
 promotion
 implementation
 such
-practice
 practise
+practice
 promotes
 able
 had
@@ -2377,8 +2377,8 @@ enrichment
 follow
 traverse
 staying
-neighbouring
 neighboring
+neighbouring
 preceding
 robustness
 issue
@@ -3140,8 +3140,8 @@ resistivity
 stress
 tension
 thermal
-torque
 torc
+torque
 wavenumber
 dab
 centimetre
@@ -3399,8 +3399,8 @@ power
 writeable
 iota
 customization
-miter
 mitre
+miter
 demote
 parr
 euclidian
@@ -4937,7 +4937,6 @@ monomial
 ham
 resizer
 friction
-sal
 factorization
 factor
 testable
@@ -4986,4 +4985,3 @@ sufficiently
 ire
 plug
 unrecognize
-vee
