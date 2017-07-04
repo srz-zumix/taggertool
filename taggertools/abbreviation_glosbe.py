@@ -83,6 +83,8 @@ def _check_en(word, d, adict, optional):
     # 不適切な言葉は点数下げる
     if 'sex' == text:
         return -10
+    if 'act of urination' == text:
+        return -2
 
     # タグをチェック
     for tag in tags:
@@ -99,7 +101,10 @@ def _check_en(word, d, adict, optional):
             find_value = 0
         if tag in ['chiefly us', 'chiefly uk']:
             raise IgnoreError
-        if tag in ['obsolete', 'cockney rhyming slang', 'slang', 'nonstandard', 'archaic', 'mostly uncountable']:
+        if tag in ['obsolete', 'archaic', 'obsolete or archaic', 'obsolete or dialect', 'rare',
+                   'cockney rhyming slang', 'slang', 'nonstandard', 'uncountable', 'mostly uncountable',
+                   'used informally',
+                   ]:
             # スラング or すたれた ものは除外
             raise IgnoreError
         if tag in ['of champagne', 'golf', 'anthropology', 'music',
@@ -253,6 +258,7 @@ def _check_en(word, d, adict, optional):
         ignore_starts = [
             'obsolete spelling of',
             'obsolete form of',
+            'obsolete emphatic of',
             'currency of',
             'the currency of',
             'the basic unit of money in',
