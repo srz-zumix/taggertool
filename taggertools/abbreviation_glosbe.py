@@ -85,6 +85,8 @@ def _check_en(word, d, adict, optional):
         return -10
     if 'act of urination' == text:
         return -2
+    if text.startswith('eliminate urine'):
+        return -2
 
     # タグをチェック
     for tag in tags:
