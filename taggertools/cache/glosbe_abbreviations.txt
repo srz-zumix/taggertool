@@ -261,3 +261,5 @@ cob
 ack
 bab
 kbar
+ted
+gym
