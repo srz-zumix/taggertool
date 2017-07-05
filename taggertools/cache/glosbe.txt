@@ -846,8 +846,8 @@ quaternion
 transpose
 determinant
 adjoint
-homogenous
 homogeneous
+homogenous
 frustum
 squad
 angle
@@ -1090,8 +1090,8 @@ pressed
 press
 exclude
 track
-klick
 click
+klick
 extent
 storage
 horizon
@@ -1769,7 +1769,6 @@ useless
 deallocation
 might
 becomes
-thuris
 thus
 outside
 dynamically
@@ -1889,8 +1888,8 @@ according
 promotion
 implementation
 such
-practise
 practice
+practise
 promotes
 able
 had
@@ -2377,8 +2376,8 @@ enrichment
 follow
 traverse
 staying
-neighboring
 neighbouring
+neighboring
 preceding
 robustness
 issue
@@ -3140,8 +3139,8 @@ resistivity
 stress
 tension
 thermal
-torc
 torque
+torc
 wavenumber
 dab
 centimetre
@@ -3399,8 +3398,8 @@ power
 writeable
 iota
 customization
-mitre
 miter
+mitre
 demote
 parr
 euclidian
@@ -4100,7 +4099,6 @@ wit
 snip
 john
 simon
-brian
 developed
 worker
 population
@@ -4125,7 +4123,6 @@ latency
 hires
 centisecond
 manipulate
-physics
 saturate
 picosecond
 millennium
@@ -4175,7 +4172,6 @@ conformance
 sane
 regression
 hand
-jamb
 jam
 bentsh
 bench
@@ -4368,7 +4364,6 @@ shapefile
 glut
 simplex
 tripod
-viewy
 mikado
 donut
 diamond
@@ -5189,7 +5184,6 @@ adoption
 degen
 cryptography
 cryptographic
-wis
 monotone
 equidistribution
 poker
@@ -5214,7 +5208,6 @@ ampersand
 apostrophe
 commercial
 believes
-wee
 weeknight
 regress
 fuzz

@@ -1,3 +1,4 @@
+physic
 flu
 ass
 diss
@@ -252,7 +253,6 @@ luke
 hyp
 mom
 prep
-bye
 giz
 zee
 uni
