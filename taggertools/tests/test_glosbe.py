@@ -117,6 +117,9 @@ class Test_glosbe(unittest.TestCase):
     def test_wee(self):
         self.assertNotEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('wee'))
 
+    def test_baa(self):
+        self.assertNotEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('baa'))
+
     def test_tsk(self):
         self.assertEqual(DictResult.NoCheck, abbreviation_glosbe.check_suspicion('tsk'))
 

@@ -101,9 +101,12 @@ def _check_en(word, d, adict, optional):
                 return -5
         if tag in ['colloquial']:
             find_value = 0
+        if tag in ['onomatopoeia']:
+            # 擬音は点数を下げる
+            return -5
         if tag in ['chiefly us', 'chiefly uk']:
             raise IgnoreError
-        if tag in ['obsolete', 'archaic', 'obsolete or archaic', 'obsolete or dialect', 'rare',
+        if tag in ['obsolete', 'archaic', 'obsolete or archaic', 'obsolete or dialect', 'rare', 'humorous',
                    'cockney rhyming slang', 'slang', 'nonstandard', 'uncountable', 'mostly uncountable',
                    'used informally',
                    ]:
@@ -162,7 +165,7 @@ def _check_en(word, d, adict, optional):
             if r == DictResult.Found:
                 return find_value * 2
             elif r == DictResult.Abbreviation:
-                return -4
+                return -5
     else:
         # Abbreviation
         def check_short_of(starts):
@@ -275,6 +278,7 @@ def _check_en(word, d, adict, optional):
             'diminutive of the female given name',
             'diminutive of the male given name',
             'son of',
+            'bleating of',
         ]
         for ss in ignore_starts:
             if text.startswith(ss):
@@ -284,6 +288,7 @@ def _check_en(word, d, adict, optional):
             'sound of',
             'shaped of the letter',
             'name of the latin-script letter',
+            'cry of a',
         ]
         for ss in ignore_include:
             if ss in text:
