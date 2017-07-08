@@ -476,7 +476,7 @@ def _check_suspicion_impl(word, translate_word=None):
                 pass
             else:
                 score -= 3
-        score += (int)(ja_count / 10)
+        score += (int)((ja_count + 1) / 10)
         if score < 0:
             cache.add_abbreviation('glosbe', word)
             return DictResult.Abbreviation
