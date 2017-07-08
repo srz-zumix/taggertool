@@ -263,3 +263,10 @@ bab
 kbar
 ted
 gym
+bye
+ident
+fpm
+pine
+orang
+smh
+bri
