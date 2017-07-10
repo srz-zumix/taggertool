@@ -266,7 +266,6 @@ gym
 bye
 ident
 fpm
-pine
 orang
 smh
 bri
