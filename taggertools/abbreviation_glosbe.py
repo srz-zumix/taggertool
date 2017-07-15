@@ -28,6 +28,15 @@ def isascii(s):
         return max([ord(char) for char in s]) < 128
 
 
+def sort_dict(d):
+    def get_text(t):
+        if 'meanings' in t:
+            return t['meanings'][0]
+        elif 'phrase' in t:
+            return t['phrase']
+        return ""
+    return sorted(d, key= lambda x: get_text(x))
+
 _r_html_special_char = re.compile('&[#|\w]+;')
 _r_an = re.compile('^(a|an)\s', re.IGNORECASE)
 _r_remove_tag = re.compile('[<|\[](/|)(i|b|sup)[>|\]]', re.IGNORECASE)
@@ -101,6 +110,8 @@ def _check_en(word, d, adict, optional):
                 return -5
         if tag in ['colloquial']:
             find_value = 0
+        if tag in ['countable']:
+            find_value = 2
         if tag in ['onomatopoeia']:
             # 擬音は点数を下げる
             return -5
@@ -286,6 +297,7 @@ def _check_en(word, d, adict, optional):
 
         ignore_include = [
             'sound of',
+            'sound made by',
             'shaped of the letter',
             'name of the latin-script letter',
             'cry of a',
@@ -441,6 +453,7 @@ def _check_suspicion_impl(word, translate_word=None):
             elif any(x in [91945] for x in t['authors']):
                 optional_dicts.append(t)
 
+        master_dicts = sort_dict(master_dicts)
         global _checked_inflected
         inflected_list = []
         score, misspelling = _get_score(word, master_dicts, optional_dicts, inflected_list)
