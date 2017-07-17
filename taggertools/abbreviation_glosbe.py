@@ -31,9 +31,9 @@ def isascii(s):
 def sort_dict(d):
     def get_text(t):
         if 'meanings' in t:
-            return t['meanings'][0]
+            return t['meanings'][0]['text']
         elif 'phrase' in t:
-            return t['phrase']
+            return t['phrase']['text']
         return ""
     return sorted(d, key= lambda x: get_text(x))
 
