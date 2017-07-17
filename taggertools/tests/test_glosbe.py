@@ -72,6 +72,9 @@ class Test_glosbe(unittest.TestCase):
     def test_kpm(self):
         self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('kpm'))
 
+    def test_electric(self):
+        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('electric'))
+
     def test_pine(self):
         self.assertNotEqual(DictResult.Abbreviation, abbreviation_glosbe.check_suspicion('pine'))
 
