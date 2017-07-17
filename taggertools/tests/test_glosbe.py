@@ -72,6 +72,12 @@ class Test_glosbe(unittest.TestCase):
     def test_kpm(self):
         self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('kpm'))
 
+    def test_electric(self):
+        self.assertEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('electric'))
+
+    def test_pine(self):
+        self.assertNotEqual(DictResult.Abbreviation, abbreviation_glosbe.check_suspicion('pine'))
+
 #    def test_pea(self):
 #        self.assertEqual(DictResult.Abbreviation, abbreviation_glosbe.check_suspicion('pea'))
 
@@ -107,6 +113,21 @@ class Test_glosbe(unittest.TestCase):
 
     def test_vee(self):
         self.assertNotEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('vee'))
+
+    def test_ala(self):
+        self.assertNotEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('ala'))
+
+    def test_wis(self):
+        self.assertNotEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('wis'))
+
+    def test_wee(self):
+        self.assertNotEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('wee'))
+
+    def test_baa(self):
+        self.assertNotEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('baa'))
+
+    def test_moo(self):
+        self.assertNotEqual(DictResult.Found, abbreviation_glosbe.check_suspicion('moo'))
 
     def test_tsk(self):
         self.assertEqual(DictResult.NoCheck, abbreviation_glosbe.check_suspicion('tsk'))

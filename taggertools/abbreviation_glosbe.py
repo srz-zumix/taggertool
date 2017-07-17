@@ -28,6 +28,15 @@ def isascii(s):
         return max([ord(char) for char in s]) < 128
 
 
+def sort_dict(d):
+    def get_text(t):
+        if 'meanings' in t:
+            return t['meanings'][0]['text']
+        elif 'phrase' in t:
+            return t['phrase']['text']
+        return ""
+    return sorted(d, key= lambda x: get_text(x))
+
 _r_html_special_char = re.compile('&[#|\w]+;')
 _r_an = re.compile('^(a|an)\s', re.IGNORECASE)
 _r_remove_tag = re.compile('[<|\[](/|)(i|b|sup)[>|\]]', re.IGNORECASE)
@@ -83,6 +92,10 @@ def _check_en(word, d, adict, optional):
     # 不適切な言葉は点数下げる
     if 'sex' == text:
         return -10
+    if 'act of urination' == text:
+        return -2
+    if text.startswith('eliminate urine'):
+        return -2
 
     # タグをチェック
     for tag in tags:
@@ -97,12 +110,24 @@ def _check_en(word, d, adict, optional):
                 return -5
         if tag in ['colloquial']:
             find_value = 0
+        if tag in ['countable']:
+            find_value = 2
+        if tag in ['onomatopoeia']:
+            # 擬音は点数を下げる
+            return -5
         if tag in ['chiefly us', 'chiefly uk']:
             raise IgnoreError
-        if tag in ['obsolete', 'cockney rhyming slang', 'slang', 'nonstandard', 'archaic', 'mostly uncountable']:
+        if tag in ['obsolete', 'archaic', 'obsolete or archaic', 'obsolete or dialect', 'rare', 'humorous',
+                   'cockney rhyming slang', 'slang', 'nonstandard', 'uncountable', 'mostly uncountable',
+                   'used informally',
+                   ]:
             # スラング or すたれた ものは除外
             raise IgnoreError
-        if tag in ['of champagne', 'golf', 'anthropology', 'music', 'baseball', 'cricket', 'zoology', 'french']:
+        if tag in ['of champagne', 'golf', 'anthropology', 'music',
+                   'baseball', 'cricket', 
+                   'architecture', 'zoology', 'anatomy', 'botany',
+                   'french', 'scottish', 'northern england',
+                   ]:
             # その他、品種で除外
             raise IgnoreError
     # cockney rhyming slang
@@ -151,7 +176,7 @@ def _check_en(word, d, adict, optional):
             if r == DictResult.Found:
                 return find_value * 2
             elif r == DictResult.Abbreviation:
-                return -4
+                return -5
     else:
         # Abbreviation
         def check_short_of(starts):
@@ -249,6 +274,7 @@ def _check_en(word, d, adict, optional):
         ignore_starts = [
             'obsolete spelling of',
             'obsolete form of',
+            'obsolete emphatic of',
             'currency of',
             'the currency of',
             'the basic unit of money in',
@@ -262,6 +288,8 @@ def _check_en(word, d, adict, optional):
             'common nickname for',
             'diminutive of the female given name',
             'diminutive of the male given name',
+            'son of',
+            'bleating of',
         ]
         for ss in ignore_starts:
             if text.startswith(ss):
@@ -269,8 +297,10 @@ def _check_en(word, d, adict, optional):
 
         ignore_include = [
             'sound of',
+            'sound made by',
             'shaped of the letter',
             'name of the latin-script letter',
+            'cry of a',
         ]
         for ss in ignore_include:
             if ss in text:
@@ -423,6 +453,7 @@ def _check_suspicion_impl(word, translate_word=None):
             elif any(x in [91945] for x in t['authors']):
                 optional_dicts.append(t)
 
+        master_dicts = sort_dict(master_dicts)
         global _checked_inflected
         inflected_list = []
         score, misspelling = _get_score(word, master_dicts, optional_dicts, inflected_list)
@@ -458,7 +489,7 @@ def _check_suspicion_impl(word, translate_word=None):
                 pass
             else:
                 score -= 3
-        score += (int)(ja_count / 10)
+        score += (int)((ja_count + 1) / 10)
         if score < 0:
             cache.add_abbreviation('glosbe', word)
             return DictResult.Abbreviation
