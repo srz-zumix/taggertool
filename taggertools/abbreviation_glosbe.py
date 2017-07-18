@@ -115,11 +115,11 @@ def _check_en(word, d, adict, optional):
         if tag in ['onomatopoeia']:
             # 擬音は点数を下げる
             return -5
-        if tag in ['chiefly us', 'chiefly uk']:
+        if tag in ['chiefly us', 'chiefly uk', 'south african']:
             raise IgnoreError
         if tag in ['obsolete', 'archaic', 'obsolete or archaic', 'obsolete or dialect', 'rare', 'humorous',
                    'cockney rhyming slang', 'slang', 'nonstandard', 'uncountable', 'mostly uncountable',
-                   'used informally',
+                   'used informally', 'south african slang'
                    ]:
             # スラング or すたれた ものは除外
             raise IgnoreError
